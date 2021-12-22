@@ -7,7 +7,7 @@ VERSION = '0.1.0'
 PACKAGE_NAME = 'epiinfo'
 AUTHOR = 'John Copeland (ported code to Pyton)'
 AUTHOR_EMAIL = 'zfj4@cdc.gov'
-URL = 'https://github.com/Epi-Info/Epi-Info-Community-Edition/blob/master/StatisticsRepository/'
+URL = 'https://github.com/Epi-Info/Epi-Info-Python-Package'
 
 LICENSE = 'Apache License 2.0'
 DESCRIPTION = 'Epi Info'
