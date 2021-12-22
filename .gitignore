@@ -15,8 +15,6 @@ build/lib/epiinfo/ImportData.py
 
 epiinfo.egg-info/top_level.txt
 
-dist/epiinfo-0.1.0-py3-none-any.whl
-
 dist/epiinfo-0.1.0.tar.gz
 
 epiinfo.egg-info/dependency_links.txt
