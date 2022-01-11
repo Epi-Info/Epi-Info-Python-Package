@@ -7,6 +7,9 @@ Contains functions for importing data sources to Python objects (lists of dictio
 ##### CSV
 <code>dataset = eicsv('<i>path/filename</i>.csv')</code><br>
 Reads a CSV file an creates a list of dictionaries called 'dataset'.<br>
+##### JSON
+<code>dataset = eijson('<i>path/filename</i>.json')</code><br>
+Reads a JSON file an creates a list of dictionaries called 'dataset'.<br>
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
 ```
