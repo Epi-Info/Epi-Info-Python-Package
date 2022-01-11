@@ -22,3 +22,5 @@ epiinfo.egg-info/dependency_links.txt
 epiinfo.egg-info/requires.txt
 
 epiinfo.egg-info/SOURCES.txt
+
+build/lib/epiinfo/EncryptionDecryptionKeys.py

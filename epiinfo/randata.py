@@ -1,6 +1,13 @@
 import io
 import csv
+import json
 import time
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
+import binascii
+import base64
+import xml.etree.ElementTree as ET
+from .EncryptionDecryptionKeys import EncryptionDecryptionKeys
 
 class randata:
     """ The randata class is a dataset as a list of dictionaries
@@ -306,7 +313,8 @@ class randata:
             columns = [columns]
         for row in self._Dictlist:
             for k in columns:
-                row[k] = int(float(row[k]))
+                if row[k] is not None:
+                    row[k] = int(float(row[k]))
     
     def floatcolumns(self, columns):
         """ Converts str values to float in Dictlist
@@ -319,7 +327,8 @@ class randata:
             columns = [columns]
         for row in self._Dictlist:
             for k in columns:
-                row[k] = float(row[k])
+                if row[k] is not None:
+                    row[k] = float(row[k])
 
 def isruddynumeric(val):
     """ Checks if a value is numeric
@@ -335,6 +344,59 @@ def isruddynumeric(val):
         return True
     except ValueError:
         return False
+
+def syncToRandata(pathandfile, pwd):
+    """ Reads an Epi Info sync file (encrypted XML) and
+        returns a randata object.
+        Parameters:
+          pathandfile (str): the path and sync file name
+          pwd (str): the password used to encrypt the data
+        Returns:
+          randata
+    """
+    lod = []
+    with open (pathandfile, "r") as myfile:
+        data=myfile.readlines()
+    keyData = PBKDF2(pwd.encode("utf-8"), binascii.unhexlify(EncryptionDecryptionKeys.PASSWORDSALT), 16, count=1000)
+    keyArray = binascii.unhexlify(EncryptionDecryptionKeys.INITVECTOR)
+    encryptedData = base64.standard_b64decode(data[0].encode("utf-8"))
+    cipher = AES.new(keyData, AES.MODE_CBC, keyArray)
+    a = cipher.decrypt(encryptedData)
+    b = a[:-ord(a[len(a)-1:])]
+    try:
+        c = b.decode('utf-8')
+    except Exception as e:
+        print('Could not decrypt. Possible incorrect password. Passwords are case-sensitive.')
+        lod.append({'Error' : 'Could not decrypt. Possible incorrect password. Passwords are case-sensitive.'})
+        return randata(lod)
+    root = ET.fromstring(c)
+    tree = ET.ElementTree(root)
+    for child in root:
+        d = {}
+        for k in child.attrib:
+            if k.lower() == 'surveyresponseid':
+                d['GlobalRecordId'] = child.attrib[k]
+            elif k.lower() == 'fkey':
+                d['FKey'] = child.attrib[k]
+            else:
+                d[k] = child.attrib[k]
+        for gcs in child:
+            for gc in gcs:
+                for k in gc.attrib:
+                    d[gc.attrib[k]] = gc.text
+        lod.append(d)
+    return randata(lod)
+
+def jsonToRandata(pathandfile):
+    """ Reads a JSON file and returns a randata object.
+        Parameters:
+          pathandfile (str): the path and JSON file name
+        Returns:
+          randata
+    """
+    with open(pathandfile, 'r') as fin:
+        dictlist = json.loads(fin.read())
+    return randata(dictlist)
 
 def csvToRandata(pathandfile):
     """ Reads a CSV file and returns a randata object.
