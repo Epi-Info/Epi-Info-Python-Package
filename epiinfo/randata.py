@@ -365,13 +365,13 @@ def syncToRandata(pathandfile, initVector, passwordSalt, pwd):
     keyArray = binascii.unhexlify(initVector)
     encryptedData = base64.standard_b64decode(data[0].encode("utf-8"))
     cipher = AES.new(keyData, AES.MODE_CBC, keyArray)
-    a = cipher.decrypt(encryptedData)
-    b = a[:-ord(a[len(a)-1:])]
     try:
+        a = cipher.decrypt(encryptedData)
+        b = a[:-ord(a[len(a)-1:])]
         c = b.decode('utf-8')
     except Exception as e:
-        print('Could not decrypt. Possible incorrect password. Passwords are case-sensitive.')
-        lod.append({'Error' : 'Could not decrypt. Possible incorrect password. Passwords are case-sensitive.'})
+        print('Could not decrypt. Possible incorrect initVector, salt, or password. All are case-sensitive.')
+        lod.append({'Error' : 'Could not decrypt. Possible incorrect initVector, salt, or password. All are case-sensitive.'})
         return randata(lod)
     root = ET.fromstring(c)
     tree = ET.ElementTree(root)
