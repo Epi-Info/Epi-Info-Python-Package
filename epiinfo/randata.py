@@ -345,11 +345,15 @@ def isruddynumeric(val):
     except ValueError:
         return False
 
-def syncToRandata(pathandfile, pwd):
+def syncToRandata(pathandfile, initVector, passwordSalt, pwd):
     """ Reads an Epi Info sync file (encrypted XML) and
         returns a randata object.
         Parameters:
           pathandfile (str): the path and sync file name
+          initVector (str): the Init Vector used to encrypt
+            the data (obtained from the mobile app)
+          passwordSalt (str): the Salt used to encrypt
+            the data (obtained from the mobile app)
           pwd (str): the password used to encrypt the data
         Returns:
           randata
@@ -357,8 +361,8 @@ def syncToRandata(pathandfile, pwd):
     lod = []
     with open (pathandfile, "r") as myfile:
         data=myfile.readlines()
-    keyData = PBKDF2(pwd.encode("utf-8"), binascii.unhexlify(EncryptionDecryptionKeys.PASSWORDSALT), 16, count=1000)
-    keyArray = binascii.unhexlify(EncryptionDecryptionKeys.INITVECTOR)
+    keyData = PBKDF2(pwd.encode("utf-8"), binascii.unhexlify(passwordSalt), 16, count=1000)
+    keyArray = binascii.unhexlify(initVector)
     encryptedData = base64.standard_b64decode(data[0].encode("utf-8"))
     cipher = AES.new(keyData, AES.MODE_CBC, keyArray)
     a = cipher.decrypt(encryptedData)
