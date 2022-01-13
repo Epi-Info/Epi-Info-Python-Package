@@ -361,11 +361,11 @@ def syncToRandata(pathandfile, initVector, passwordSalt, pwd):
     lod = []
     with open (pathandfile, "r") as myfile:
         data=myfile.readlines()
-    keyData = PBKDF2(pwd.encode("utf-8"), binascii.unhexlify(passwordSalt), 16, count=1000)
-    keyArray = binascii.unhexlify(initVector)
-    encryptedData = base64.standard_b64decode(data[0].encode("utf-8"))
-    cipher = AES.new(keyData, AES.MODE_CBC, keyArray)
     try:
+        keyData = PBKDF2(pwd.encode("utf-8"), binascii.unhexlify(passwordSalt), 16, count=1000)
+        keyArray = binascii.unhexlify(initVector)
+        encryptedData = base64.standard_b64decode(data[0].encode("utf-8"))
+        cipher = AES.new(keyData, AES.MODE_CBC, keyArray)
         a = cipher.decrypt(encryptedData)
         b = a[:-ord(a[len(a)-1:])]
         c = b.decode('utf-8')
@@ -373,22 +373,26 @@ def syncToRandata(pathandfile, initVector, passwordSalt, pwd):
         print('Could not decrypt. Possible incorrect initVector, salt, or password. All are case-sensitive.')
         lod.append({'Error' : 'Could not decrypt. Possible incorrect initVector, salt, or password. All are case-sensitive.'})
         return randata(lod)
-    root = ET.fromstring(c)
-    tree = ET.ElementTree(root)
-    for child in root:
-        d = {}
-        for k in child.attrib:
-            if k.lower() == 'surveyresponseid':
-                d['GlobalRecordId'] = child.attrib[k]
-            elif k.lower() == 'fkey':
-                d['FKey'] = child.attrib[k]
-            else:
-                d[k] = child.attrib[k]
-        for gcs in child:
-            for gc in gcs:
-                for k in gc.attrib:
-                    d[gc.attrib[k]] = gc.text
-        lod.append(d)
+    try:
+        root = ET.fromstring(c)
+        for child in root:
+            d = {}
+            for k in child.attrib:
+                if k.lower() == 'surveyresponseid':
+                    d['GlobalRecordId'] = child.attrib[k]
+                elif k.lower() == 'fkey':
+                    d['FKey'] = child.attrib[k]
+                else:
+                    d[k] = child.attrib[k]
+            for gcs in child:
+                for gc in gcs:
+                    for k in gc.attrib:
+                        d[gc.attrib[k]] = gc.text
+            lod.append(d)
+    except Exception as e:
+        print('Could not decrypt. Possible incorrect initVector. initVector is case-sensitive.')
+        lod.append({'Error' : 'Could not decrypt. Possible incorrect initVector. initVector is case-sensitive.'})
+        return randata(lod)
     return randata(lod)
 
 def jsonToRandata(pathandfile):
