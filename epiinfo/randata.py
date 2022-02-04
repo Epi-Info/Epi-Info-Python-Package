@@ -388,6 +388,10 @@ def syncToRandata(pathandfile, initVector, passwordSalt, pwd):
                 for gc in gcs:
                     for k in gc.attrib:
                         d[gc.attrib[k]] = gc.text
+                        if gc.text == 'true':
+                            d[gc.attrib[k]] = True
+                        elif gc.text == 'false':
+                            d[gc.attrib[k]] = False
             lod.append(d)
     except Exception as e:
         print('Could not decrypt. Possible incorrect initVector. initVector is case-sensitive.')
