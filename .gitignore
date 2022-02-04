@@ -26,3 +26,7 @@ epiinfo.egg-info/SOURCES.txt
 build/lib/epiinfo/EncryptionDecryptionKeys.py
 
 *.whl
+
+build/lib/epiinfo/LogisticRegression.py
+
+build/lib/epiinfo/RegressionUtilities.py
