@@ -226,7 +226,7 @@ class EIMatrix:
         inbA[i][j] = float(colShifted[i + 1])
 
   def Conditional(self, lintOffset, ldblaDataArray, ldblaJacobian, ldblB, ldblaF, nRows):
-    """ Inverts a matrix and stores the results in a list.
+    """ Conditional Logistic Regression stores results in a list
         Parameters:
           lintOffset (int)
           ldblaDataArray (list)
@@ -317,6 +317,112 @@ class EIMatrix:
           c[i][k] = 0.0
 
     return conditional
+
+  def UnConditional(self, lintOffset, ldblaDataArray, ldblaJacobian, ldblB, ldblaF, nRows):
+    """ UnConditional Logistic Regression stores results in a list
+        Parameters:
+          lintOffset (int)
+          ldblaDataArray (list)
+          ldblaJacobian (list)
+          ldblB (list)
+          ldblF (list)
+          nRows (int)
+        Returns: float
+    """
+    unconditional = 0.0
+    x = []
+    for i in range(0, len(ldblB)):
+      x.append(0.0)
+    ldblIthLikelihood = 0.0
+    ldblIthContribution = 0.0
+    ldblweight = 1.0
+    for i in range(0, nRows):
+      for j in range(0, len(ldblB)):
+        x[j] = float(ldblaDataArray[i][j + lintOffset])
+      if lintOffset == 2:
+        ldblweight = float(ldblaDataArray[i][1])
+      ldblIthLikelihood = 0.0
+      for j in range(0, len(ldblB)):
+        ldblIthLikelihood += x[j] * float(ldblB[j])
+      ldblIthLikelihood = 1 / (1 + math.exp(-ldblIthLikelihood))
+      if float(ldblaDataArray[i][0]) == 0:
+        ldblIthContribution = 1.0 - ldblIthLikelihood
+      else:
+        ldblIthContribution = ldblIthLikelihood
+      for k in range(0, len(ldblB)):
+        oldldblaF = 0.0
+        if len(ldblaF) > k:
+          oldldblaF = float(ldblaF[k])
+        if float(ldblaDataArray[i][0]) > 0.0:
+          newldblaF = oldldblaF + (1 - ldblIthLikelihood) * x[k] * ldblweight
+          ldblaF[k] = ldblaF
+        else:
+          newldblaF = oldldblaF + (0 - ldblIthLikelihood) * x[k] * ldblweight
+          ldblaF[k] = ldblaF
+        for j in range(0, len(ldblB)):
+          oldldblaJacobianjk = 0.0
+          if len(ldblaJacobian) > j:
+            oldldblaJacobianj = ldblaJacobian[j]
+            if len(oldldblaJacobianj) > k:
+              oldldblaJacobianjk = float(oldldblaJacobianj[k])
+            else:
+              ldblaJacobian.append([None] * len(ldblB))
+            newldblaJacobianjk = oldldblaJacobianjk + (x[k] * x[j] * (1 - ldblIthLikelihood) * ldblIthLikelihood) * ldblweight
+            ldblaJacobian[j][k] = newldblaJacobianjk
+      unconditional = unconditional + log(ldblIthContribution) * ldblweight
+    return unconditional
+
+  def CalcLikelihood(self, lintOffset, ldblA, ldblB, ldblaJacobian, ldblaF, nRows, likelihood, strError, booStartAtZero):
+    """ Computes likelihood and stores the result as a float in a list
+        Parameters:
+          lintOffset (int)
+          ldblA (list)
+          ldblB (list)
+          ldblaJacobian (list)
+          ldblF (list)
+          nRows (int)
+          likelihood (list of float): A float in a list so it will be mutable
+          strError (list of str): A string in a list so it will be mutable
+          booStartAtZero (bool)
+        Returns: none
+    """
+    i = 0
+    k = False
+    ncases = 0.0
+    nrecs = 0.0
+    if len(strError) > 0:
+      strError[0] = ""
+    else:
+      strError.append("")
+
+    if self.get_mboolFirst() == True and self.get_mboolIntercept() == True:
+      self.set_mboolFirst(False)
+      ncases = 0.0
+      for i in range(0, len(ldblA)):
+        if int(ldblA[i][0]) == 1:
+          ncases += 1.0
+        nrecs += 1.0
+      if ncases > 0.0 and nrecs - ncases > 0.0:
+        if booStartAtZero == True:
+          ldblB[len(ldblB) - 1] = 0.0
+        else:
+          ldblB[len(ldblB) - 1] = math.log(ncases / (nrecs - ncases))
+      elif ncases == 0.0:
+        strError[0] = "Dependent variable contains no cases."
+        return
+      elif nrecs - ncases == 0.0:
+        strError[0] = "Dependent variable contains no controls."
+        return
+    if self.get_mstrMatchVar() is not None and len(self.get_mstrMatchVar()) > 0: 
+      for i in range(0, len(ldblB)):
+        ldblaF.append(0.0)
+        arrayfori = []
+        for j in range(0, len(ldblB)):
+          arrayfori.append(0.0)
+        ldblaJacobian.append(arrayfori)
+      likelihood[0] = self.Conditional(lintOffset, ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
+    else:
+      likelihood[0] = self.UnConditional(lintOffset, ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
 
 class LogisticRegressionResults:
   """ Class for Logistic Regression results
