@@ -468,7 +468,7 @@ class EIMatrix:
 
     self.set_mintIterations(1)
     ldbloldll = ldbllfst[0]
-    ldbll = ldbllfst[0]
+    ldbll = ldbllfst
     if ldbllfst[0] > 0:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Positive Log-Likelihood, regression is diverging"
@@ -502,6 +502,70 @@ class EIMatrix:
       self.set_mdblScore(self.get_mdblScore() + ldblaScore[i] * float(self.get_mdblaF()[i]))
 
     ridge = 0.0
+
+    self.set_mintIterations(2)
+    while self.get_mintIterations() < llngIters[0]:
+      for i in range(len(self.get_mdblaF())):
+        self.get_mdblaF()[i] = 0.0
+      self.CalcLikelihood(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows[0], ldbll, strCalcLikelihoodError, booStartAtZero)
+      doThisStuff = YES
+      if ldbloldll - ldbll > ldblConv[0]:
+        if ridge > 0.0 and ridge < 1000.0:
+          self.set_mintIterations(self.get_mintIterations() - 1)
+          ridge *= 4.0
+          for i in range(len(self.get_mdblaB())):
+            for j in range(len(self.get_mdblaB())):
+              iequalsj = 0.0
+              if i == j:
+                iequalsj = 1.0
+              self.get_mdblaJacobian()[i][j] = oldmdblaJacobian[i][j] * (1 + iequalsj * ridge)
+            self.get_mdblaB()[i] = float(oldmdblaB[i])
+            self.get_mdblaF()[i] = float(oldmdblaF[i])
+          doThisStuff = False
+        if doThisStuff == True:
+          self.set_mboolConverge(False)
+          self.set_mdblllfst(ldbllfst)
+          strCalcLikelihoodError[0] = "Regression not converging"
+      elif ldbll - ldbloldll < ldblConv[0]:
+        self.set_mdblaB([])
+        for i in range(len(oldmdblaB)):
+          self.get_mdblaB().append(oldmdblaB[i])
+        self.set_mintIterations(self.get_mintIterations() - 1)
+        self.set_mdblllfst(mdblllfst)
+        self.set_mdbllllast(ldbll)
+        return
+
+      if doThisStuff == True:
+        oldmdblaInv = []
+        for i in range(len(self.get_mdblaInv())):
+          oldmdblaInv.append(self.get_mdblaInv()[i])
+        oldmdblaB = []
+        for i in range(len(self.get_mdblaB())):
+          oldmdblaB.append(self.get_mdblaB()[i])
+        for i in range(len(self.get_mdblaB())):
+          for j in range(len(self.get_mdblaB())):
+            oldmdblaJacobian[i][j] = float(self.get_mdblaJacobian()[i][j])
+          oldmdblaF[i] = float(self.get_mdblaF()[i])
+        ridge = 0.0
+        ldbloldll = ldbll
+
+      self.inv(self.get_mdblaJacobian(), self.get_mdblaInv())
+      ldblDet = 1.0
+      for i in range(len(self.get_mdblaB())):
+        ldblDet *= self.get_mdblaJacobian()[i][i]
+      if self.fabs(ldblDet) < ldblToler[0]:
+        self.set_mboolConverge(False)
+        strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+        return
+      for i in range(len(self.get_mdblaB())):
+        for k in range(len(self.get_mdblaB())):
+          self.get_mdblaB()[i] = float(self.get_mdblaB()[i]) + float(self.get_mdblaF()[k]) * float(self.get_mdblaInv()[i][k])
+          self.get_mdblaJacobian()[i][k] = 0.0
+
+      self.set_mintIterations(self.get_mintIterations() + 1)
+
+    self.set_mdblllfst(ldbllfst)
+    self.set_mdbllllast(ldbll)
 
 class LogisticRegressionResults:
   """ Class for Logistic Regression results
