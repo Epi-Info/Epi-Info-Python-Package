@@ -20,6 +20,7 @@ class LogisticRegression:
     self.mstrGroupVar = None
     self.mstraTerms = None
     self.mStrADiscrete = None
+    self.dummiesNSMA = []
     self.terms = None
     self.discrete = None
     self.lintIntercept = None
@@ -64,6 +65,19 @@ class LogisticRegression:
     else:
       ZFP = T
     return ZFP
+
+  def is_a_number(self, s):
+    """ Determines whether a string is a number
+        Parameters:
+          s (str)
+        Returns:
+          bool
+    """
+    try:
+      float(s)
+      return True
+    except ValueError:
+      return False
 
   def createSettings(self, inputVariableList):
     """ Sets initial values of properties
@@ -188,19 +202,84 @@ class LogisticRegression:
 
     return True
 
-  def checkIndependentVariables(self, currentTableMA, independentVariables):
-    """ Creates dummy variables for independet variables when necessary
+  def makeDummies(self, currentTableMA, variablesNeedingDummies, valuesForDummies, independentVariables):
+    """ Creates dummy variables for independent variables
         Parameters:
-          currentTableMA (list of dictionaries)
+          currentTableMA (list of lists)
+          variablesNeetingDummies (list)
+          valuesForDummies (list)
+          independentVariables (list)
+        Returns: bool
+    """
+    if len(valuesForDummies) != len(variablesNeedingDummies):
+      return
+
+  def checkIndependentVariables(self, currentTableMA, independentVariables):
+    """ Checks whether independent variables need dummy variables
+        Parameters:
+          currentTableMA (list of lists)
           independentVariables (list)
         Returns: bool
     """
     variablesNeedingDummies = []
     valuesForDummies = []
     rowOne = currentTableMA[0]
+    for j in range(1, len(rowOne)):
+      isOneZero = True
+      isYesNo = True
+      isOneTwo = True
+      isNumeric = True
+      isTrueFalse = True
+      for lsna in currentTableMA:
+        loutcome = str(lsna[j])
+        if isOneZero:
+          if loutcome not in ['1','0']:
+            isOneZero = False
+        if isOneTwo:
+          if loutcome not in ['1','2']:
+            isOneTwo = False
+        if isYesNo:
+          if loutcome.lower() not in ['yes','no']:
+            isYesNo = False
+        if isTrueFalse:
+          if loutcome.lower() not in ['true','false']:
+            isTrueFalse = False
+        if isNumeric:
+          isNumeric = self.is_a_number(loutcome)
+      if isOneTwo:
+        for lsna in currentTableMA:
+          if str(lsna[j]) == '1':
+            lsna[j] = 1
+          else:
+            lsna[j] = 0
+      elif isYesNo:
+        for lsna in currentTableMA:
+          if str(lsna[j]).lower() == 'yes':
+            lsna[j] = 1
+          else:
+            lsna[j] = 0
+      elif isTrueFalse:
+        for lsna in currentTableMA:
+          if str(lsna[j]).lower() == 'true':
+            lsna[j] = 1
+          else:
+            lsna[j] = 0
+      elif isNumeric == False or independentVariables[j - 1] in self.dummiesNSMA:
+        variablesNeedingDummies.append(j)
+        valuesForThisJ = []
+        for lnsmai in currentTableMA:
+          lnsmaij = str(lnsmai[j])
+          if lnsmaij not in valuesForThisJ:
+            valuesForThisJ.append(lnsmaij)
+        if len(valuesForThisJ) > 1:
+          valuesForThisJ.sort()
+          valuesForDummies += valuesForThisJ[1:]
+    if len(variablesNeedingDummies) > 0:
+      self.makeDummies(currentTableMA, variablesNeedingDummies, valuesForDummies, independentVariables)
 
   def getCurrentTable(self, outcomeVariable, independentVariables):
     """ Creates an analysis dataset having a 0/1 dependent variable
+        Converts analysis dataset from list of dictionaries to lise of lists
         Parameters:
           outcomeVariable (str)
           IndependentVariables (list)
@@ -223,8 +302,16 @@ class LogisticRegression:
     self.removeRecordsWithNulls(mutableCurrentTable)
     if self.outcomeOneZero(mutableCurrentTable) == False:
       return False
-    self.checkIndependentVariables(mutableCurrentTable, independentVariables)
-    self.currentTable = mutableCurrentTable
+    currentTableMutable = []
+    for rd in mutableCurrentTable:
+      rl = []
+      for k, v in rd.items():
+        rl.append(v)
+      currentTableMutable.append(rl)
+    self.checkIndependentVariables(currentTableMutable, independentVariables)
+    self.currentTable = []
+    for ctmr in currentTableMutable:
+      self.currentTable.append(ctmr)
 
     return True
 
