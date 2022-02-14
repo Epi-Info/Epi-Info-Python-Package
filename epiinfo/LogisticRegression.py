@@ -13,6 +13,7 @@ class LogisticRegression:
     self.mdblConv = None
     self.mdblToler = None
     self.mboolIntercept = None
+    self.mboolFirst = None
     self.mstraBoolean = None
     self.mstrMatchVar = None
     self.mstrWeightVar = None
@@ -213,6 +214,35 @@ class LogisticRegression:
     """
     if len(valuesForDummies) != len(variablesNeedingDummies):
       return
+    newIndependentVariables = [iV for iV in independentVariables]
+    i = 0
+    for indexOfVariable in variablesNeedingDummies:
+      valuesi = valuesForDummies[i]
+      j = 0
+      for nsmaij in currentTableMA:
+        k = len(valuesi) - 1
+        while k > 0:
+          nsmaij.insert(indexOfVariable + 1, "")
+          if j == 0:
+            if indexOfVariable - 1 < len(newIndependentVariables):
+              newIndependentVariables.insert(indexOfVariable, "")
+            else:
+              newIndependentVariables.append("")
+          k -= 1
+        k = len(valuesi) - 1
+        while k >= 0:
+          if nsmaij[indexOfVariable] == valuesi[k]:
+            nsmaij[indexOfVariable + k] = '1'
+          else:
+            nsmaij[indexOfVariable + k] = '0'
+          if j == 0:
+            newIndependentVariables[indexOfVariable - 1 + k] = valuesi[k]
+          k -= 1
+        currentTableMA[j] = nsmaij
+        j += 1
+      i += 1
+    independentVariables.clear()
+    independentVariables += [iV for iV in newIndependentVariables]
 
   def checkIndependentVariables(self, currentTableMA, independentVariables):
     """ Checks whether independent variables need dummy variables
@@ -294,9 +324,12 @@ class LogisticRegression:
       mutableCurrentTable.append(row)
 
     if self.mstrGroupVar == None:
+      # This section in Objective-C is for the value mapper,
+      # which this routine does not have or need
       pass
     else:
-      # Matching later
+      # This section in Objective-C is for the value mapper,
+      # which this routine does not have or need
       pass
 
     self.removeRecordsWithNulls(mutableCurrentTable)
@@ -333,15 +366,15 @@ class LogisticRegression:
       self.lintweight = 0
 
     k = 0
-    NumRows = len(self.currentTable)
-    NumColumns = len(self.currentTable[0])
+    self.NumRows = len(self.currentTable)
+    self.NumColumns = len(self.currentTable[0])
 
-    if NumRows == 0:
+    if self.NumRows == 0:
       return
 
     lIntIsMatch = 0
 
-    if len(mstrMatchVar) == 0:
+    if len(self.mstrMatchVar) == 0:
       # Match Variable: write later
       i = 0
       lintnull = 0
@@ -368,6 +401,38 @@ class LogisticRegression:
     self.logisticResults = LogisticRegressionResults()
     if self.getCurrentTable(self.mstrDependVar, inputVariableList['exposureVariables']) == False:
       return
-    self.getRawData
+    self.getRawData()
+
+    lintConditional = 0
+    lintweight = 0
+    ldblFirstLikelihood = 0.0
+    ldblScore = 0.0
+
+    self.mboolFirst = True
+    self.mMatrixLikelihood = EIMatrix()
+    self.mMatrixLikelihood.set_mboolFirst(self.mboolFirst)
+    self.mMatrixLikelihood.set_mboolIntercept(self.mboolIntercept)
+    if self.mstrGroupVar is not None:
+      self.mMatrixLikelihood.set_mstrMatchVar(self.mstrGroupVar)
+      lintConditional = 1
+      self.NumColumns -= 1
+      groupValues = []
+      for i in range(len(self.currentTable)):
+        groupValue = self.currentTable[i][1]
+        if groupValue not in groupValues:
+          groupValues.append(groupValue)
+      self.mMatrixLikelihood.set_matchGroupValues(len(groupValues))
+    else:
+      self.mMatrixLikelihood.set_mstrMatchVar("")
+    self.mMatrixLikelihood.MaximizeLikelihood(
+                           self.NumRows,
+                           self.NumColumns,
+                           self.currentTable,
+                           lintweight + lintConditional + 1,
+                           self.NumColumns - (lintweight + lintConditional + 1),
+                           self.mlngIter,
+                           self.mdblToler,
+                           self.mdblConv,
+                           False)
 
     return self.logisticResults

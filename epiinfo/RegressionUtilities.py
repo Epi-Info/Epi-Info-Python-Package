@@ -1,3 +1,4 @@
+import math
 """ This file defines several supporting classes for the
     Epi Info Regression Routines
 """
@@ -94,6 +95,34 @@ class EIMatrix:
   def set_lstrError(self, v):
     self._lstrError = v
 
+  def setListItem(self, thelist, theitem, theindex):
+    """ Sets and item at a specific list index; grows list if necessary
+        Parameters:
+          thelist (list)
+          theitem (anything)
+          theindex (int)
+    """
+    if len(thelist) > theindex:
+      thelist[theindex] = theitem
+      return
+    for i in range(1 + theindex - len(thelist)):
+      thelist.append(None)
+    thelist[theindex] = theitem
+
+  def setMatrixItem(self, thematrix, theitem, theiindex, thejindex):
+    """ Sets and item at a specific list of lists index; grows list(s) if necessary
+        Parameters:
+          thematrix (list of lists)
+          theitem (anything)
+          theiindex (int)
+          thejindex (int)
+    """
+    if len(thematrix) > theiindex:
+      self.setListItem(thematrix[theiindex], theitem, thejindex)
+      return
+    self.setListItem(thematrix, [], theiindex)
+    self.setListItem(thematrix[theiindex], theitem, thejindex)
+
   def lubksb(self, a, n, indx, B):
     """ Performs calculations and stores the results in a list.
         Parameters:
@@ -114,6 +143,7 @@ class EIMatrix:
           sum -= float(a[i][j-1]) * B[j]
       elif sum != 0.0:
         ii = i + 1
+      B[i + 1] = sum
     i = n - 1
     while i >= 0:
       sum = B[i + 1]
@@ -223,7 +253,7 @@ class EIMatrix:
         colShifted[k + 1] = col[k]
       self.lubksb(a, n, indxShifted, colShifted)
       for i in range(0, n):
-        inbA[i][j] = float(colShifted[i + 1])
+        invA[i][j] = float(colShifted[i + 1])
 
   def Conditional(self, lintOffset, ldblaDataArray, ldblaJacobian, ldblB, ldblaF, nRows):
     """ Conditional Logistic Regression stores results in a list
@@ -318,7 +348,7 @@ class EIMatrix:
 
     return conditional
 
-  def UnConditional(self, lintOffset, ldblaDataArray, ldblaJacobian, ldblB, ldblaF, nRows):
+  def UnConditional(self, lintOffset, ldblaDataArray, ldblaJacobian, ldblB, ldblaF, nRows, printinters):
     """ UnConditional Logistic Regression stores results in a list
         Parameters:
           lintOffset (int)
@@ -342,9 +372,16 @@ class EIMatrix:
       if lintOffset == 2:
         ldblweight = float(ldblaDataArray[i][1])
       ldblIthLikelihood = 0.0
+      if printinters and i == 0:
+        print('x:', x)
+        print('ldblB:', ldblB)
       for j in range(0, len(ldblB)):
         ldblIthLikelihood += x[j] * float(ldblB[j])
+      if printinters and i == 0:
+        print('ldblIthLikelihood:', ldblIthLikelihood)
       ldblIthLikelihood = 1 / (1 + math.exp(-ldblIthLikelihood))
+      if printinters and i == 0:
+        print('ldblIthLikelihood:', ldblIthLikelihood)
       if float(ldblaDataArray[i][0]) == 0:
         ldblIthContribution = 1.0 - ldblIthLikelihood
       else:
@@ -355,24 +392,31 @@ class EIMatrix:
           oldldblaF = float(ldblaF[k])
         if float(ldblaDataArray[i][0]) > 0.0:
           newldblaF = oldldblaF + (1 - ldblIthLikelihood) * x[k] * ldblweight
-          ldblaF[k] = ldblaF
+          self.setListItem(ldblaF, newldblaF, k)
         else:
           newldblaF = oldldblaF + (0 - ldblIthLikelihood) * x[k] * ldblweight
-          ldblaF[k] = ldblaF
+          self.setListItem(ldblaF, newldblaF, k)
         for j in range(0, len(ldblB)):
           oldldblaJacobianjk = 0.0
           if len(ldblaJacobian) > j:
             oldldblaJacobianj = ldblaJacobian[j]
             if len(oldldblaJacobianj) > k:
-              oldldblaJacobianjk = float(oldldblaJacobianj[k])
-            else:
-              ldblaJacobian.append([None] * len(ldblB))
-            newldblaJacobianjk = oldldblaJacobianjk + (x[k] * x[j] * (1 - ldblIthLikelihood) * ldblIthLikelihood) * ldblweight
-            ldblaJacobian[j][k] = newldblaJacobianjk
-      unconditional = unconditional + log(ldblIthContribution) * ldblweight
+              oldldblaJacobianjk = 0.0 if oldldblaJacobianj[k] is None else float(oldldblaJacobianj[k])
+          else:
+            ldblaJacobian.append([None] * len(ldblB))
+          if printinters and i == 0:
+            print(oldldblaJacobianjk, x[k], ldblIthLikelihood, ldblweight)
+          newldblaJacobianjk = oldldblaJacobianjk + (x[k] * x[j] * (1 - ldblIthLikelihood) * ldblIthLikelihood) * ldblweight
+          if printinters and i == 0:
+            print(newldblaJacobianjk)
+          ldblaJacobian[j][k] = newldblaJacobianjk
+          if printinters and i == 0:
+            print(ldblaJacobian)
+            print(i, k, j, '-----------------------------------------------')
+      unconditional = unconditional + math.log(ldblIthContribution) * ldblweight
     return unconditional
 
-  def CalcLikelihood(self, lintOffset, ldblA, ldblB, ldblaJacobian, ldblaF, nRows, likelihood, strError, booStartAtZero):
+  def CalcLikelihood(self, lintOffset, ldblA, ldblB, ldblaJacobian, ldblaF, nRows, likelihood, strError, booStartAtZero, printinters):
     """ Computes likelihood and stores the result as a float in a list
         Parameters:
           lintOffset (int)
@@ -420,21 +464,21 @@ class EIMatrix:
         for j in range(0, len(ldblB)):
           arrayfori.append(0.0)
         ldblaJacobian.append(arrayfori)
-      likelihood[0] = self.Conditional(lintOffset[0], ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
+      likelihood[0] = self.Conditional(lintOffset, ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
     else:
-      likelihood[0] = self.UnConditional(lintOffset[0], ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
+      likelihood[0] = self.UnConditional(lintOffset, ldblA, ldblaJacobian, ldblB, ldblaF, nRows, printinters)
 
   def MaximizeLikelihood(self, nRows, nCols, dataArray, lintOffset, lintMatrixSize, llngIters, ldblToler, ldblConv, booStartAtZero):
     """ Maximizes Likelihood
         Parameters:
-          nRows (list of int): An int in a list so it will be mutable
-          nCols (list of int): An int in a list so it will be mutable
+          nRows (int)
+          nCols (int)
           dataArray (list of lists)
-          lintOffset (list of int): An int in a list so it will be mutable
+          lintOffset (int)
           lintMatrixSize (list)
-          llngIters (list of int): An int in a list so it will be mutable
-          ldblToler (list of float): A float in a list so it will be mutable
-          ldblConv (list of float): A float in a list so it will be mutable
+          llngIters (int)
+          ldblToler (float)
+          ldblConv (float)
           booStartAtZero (bool)
         Returns: none
     """
@@ -446,18 +490,19 @@ class EIMatrix:
     self.set_mboolConverge(True)
     self.set_mboolErrorStatus(False)
     self.set_mdblaJacobian([])
-    oldmdblaJacobian = [[None] * lintMatrixSize - 1 for j in range(lintMatrixSize - 1)]
+    oldmdblaJacobian = [[None] * lintMatrixSize for j in range(lintMatrixSize)]
     self.set_mdblaInv([])
     self.set_mdblaF([])
-    oldmdblaF = [None] * lintMatrixSize - 1
+    oldmdblaF = [None] * lintMatrixSize
     self.set_mdblaB([0.0] * lintMatrixSize)
 
-    self.CalcLikelihood(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows[0], ldbllfst, strCalcLikelihoodError, booStartAtZero)
+    self.CalcLikelihood(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows, ldbllfst, strCalcLikelihoodError, booStartAtZero, False)
 
     for i in range(len(self.get_mdblaB())):
       forInv = []
       for j in range(len(self.get_mdblaB())):
         forInv.append(0.0)
+        self.setMatrixItem(oldmdblaJacobian, float(self.get_mdblaJacobian()[i][j]), i, j)
         oldmdblaJacobian[i][j] = float(self.get_mdblaJacobian()[i][j])
       self.get_mdblaInv().append(forInv)
       oldmdblaF[i] = float(self.get_mdblaF()[i])
@@ -485,7 +530,7 @@ class EIMatrix:
     ldblDet = 1.0
     for i in range(len(self.get_mdblaB())):
       ldblDet *= float(self.get_mdblaJacobian()[i][i])
-    if self.fabs(ldblDet) < ldblToler[0]:
+    if self.fabs(ldblDet) < ldblToler:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
       return
@@ -500,16 +545,17 @@ class EIMatrix:
         self.get_mdblaJacobian()[i][k] = 0.0
       self.get_mdblaB()[i] = float(self.get_mdblaB()[i]) + ldblaScore[i]
       self.set_mdblScore(self.get_mdblScore() + ldblaScore[i] * float(self.get_mdblaF()[i]))
+    print('-----------------------------')
 
     ridge = 0.0
 
     self.set_mintIterations(2)
-    while self.get_mintIterations() < llngIters[0]:
+    while self.get_mintIterations() < llngIters:
       for i in range(len(self.get_mdblaF())):
         self.get_mdblaF()[i] = 0.0
-      self.CalcLikelihood(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows[0], ldbll, strCalcLikelihoodError, booStartAtZero)
-      doThisStuff = YES
-      if ldbloldll - ldbll > ldblConv[0]:
+      self.CalcLikelihood(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows, ldbll, strCalcLikelihoodError, booStartAtZero, False)
+      doThisStuff = True
+      if ldbloldll - ldbll[0] > ldblConv:
         if ridge > 0.0 and ridge < 1000.0:
           self.set_mintIterations(self.get_mintIterations() - 1)
           ridge *= 4.0
@@ -526,12 +572,12 @@ class EIMatrix:
           self.set_mboolConverge(False)
           self.set_mdblllfst(ldbllfst)
           strCalcLikelihoodError[0] = "Regression not converging"
-      elif ldbll - ldbloldll < ldblConv[0]:
+      elif ldbll[0] - ldbloldll < ldblConv:
         self.set_mdblaB([])
         for i in range(len(oldmdblaB)):
           self.get_mdblaB().append(oldmdblaB[i])
         self.set_mintIterations(self.get_mintIterations() - 1)
-        self.set_mdblllfst(mdblllfst)
+        self.set_mdblllfst(ldbllfst)
         self.set_mdbllllast(ldbll)
         return
 
@@ -547,13 +593,13 @@ class EIMatrix:
             oldmdblaJacobian[i][j] = float(self.get_mdblaJacobian()[i][j])
           oldmdblaF[i] = float(self.get_mdblaF()[i])
         ridge = 0.0
-        ldbloldll = ldbll
+        ldbloldll = ldbll[0]
 
       self.inv(self.get_mdblaJacobian(), self.get_mdblaInv())
       ldblDet = 1.0
       for i in range(len(self.get_mdblaB())):
         ldblDet *= self.get_mdblaJacobian()[i][i]
-      if self.fabs(ldblDet) < ldblToler[0]:
+      if self.fabs(ldblDet) < ldblToler:
         self.set_mboolConverge(False)
         strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
         return
