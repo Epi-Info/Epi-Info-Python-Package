@@ -483,4 +483,12 @@ class LogisticRegression:
       self.logisticResults.PZ.append(2.0 * self.pFromZ(abs(self.logisticResults.Z[i])))
       i += 1
 
+    ldblScore = self.mMatrixLikelihood.get_mdblScore()
+    lldblDF = len(self.mMatrixLikelihood.get_mdblaB())
+    if self.mboolIntercept:
+      lldblDF -= 1
+    lllr = 2.0 * (self.mMatrixLikelihood.get_mdbllllast()[0] - self.mMatrixLikelihood.get_mdblllfst()[0])
+    minusTwoLogLikelihood = -2.0 * self.mMatrixLikelihood.get_mdbllllast()[0]
+    print(ldblScore, lldblDF, lllr, minusTwoLogLikelihood)
+
     return self.logisticResults

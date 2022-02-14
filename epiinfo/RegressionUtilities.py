@@ -513,10 +513,12 @@ class EIMatrix:
 
     self.set_mintIterations(1)
     ldbloldll = ldbllfst[0]
-    ldbll = ldbllfst
+    ldbll = []
+    ldbll.append(ldbllfst[0])
     if ldbllfst[0] > 0:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Positive Log-Likelihood, regression is diverging"
+      print("Positive Log-Likelihood, regression is diverging")
       return
 
     self.inv(self.get_mdblaJacobian(), self.get_mdblaInv())
@@ -533,6 +535,7 @@ class EIMatrix:
     if self.fabs(ldblDet) < ldblToler:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+      print("Matrix Tolerance Exceeded")
       return
 
     ldblaScore = [0.0] * lintMatrixSize
@@ -545,7 +548,6 @@ class EIMatrix:
         self.get_mdblaJacobian()[i][k] = 0.0
       self.get_mdblaB()[i] = float(self.get_mdblaB()[i]) + ldblaScore[i]
       self.set_mdblScore(self.get_mdblScore() + ldblaScore[i] * float(self.get_mdblaF()[i]))
-    print('-----------------------------')
 
     ridge = 0.0
 
@@ -602,6 +604,7 @@ class EIMatrix:
       if self.fabs(ldblDet) < ldblToler:
         self.set_mboolConverge(False)
         strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+        print("Matrix Tolerance Exceeded")
         return
       for i in range(len(self.get_mdblaB())):
         for k in range(len(self.get_mdblaB())):
