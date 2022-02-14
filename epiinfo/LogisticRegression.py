@@ -36,6 +36,38 @@ class LogisticRegression:
 
     self.mMatrixLikelihood = EIMatrix()
 
+  def pFromZ(self, _z):
+    """ Computs a P value for a Z statistic
+        Parameters:
+          _z (float): Z statistic
+        Returns: float
+    """
+    PFZ = 0.0
+    UTZERO = 12
+    CON = 1.28
+    _x = _z
+    if _z < 0.0:
+      _x = _z * -1.0
+    if _x > UTZERO:
+      if _z < 0.0:
+        PFZ = 1.0
+      else:
+        PFZ = 0.0
+      return PFZ
+    _y = _z ** 2.0 / 2.0
+    if _x > CON:
+      PFZ = _x - 0.151679116635 + 5.29330324926 / (_x + 4.8385912808 - 15.1508972451 / (_x + 0.742380924027 + 30.789933034 / (_x + 3.99019417011)))
+      PFZ = _x + 0.000398064794 + 1.986158381364 / PFZ
+      PFZ = _x - 0.000000038052 + 1.00000615302 / PFZ
+      PFZ = 0.398942280385 * math.exp(-_y) / PFZ
+    else:
+      PFZ = _y / (_y + 5.75885480458 - 29.8213557808 / (_y + 2.624331121679 + 48.6959930692 / (_y + 5.92885724438)))
+      PFZ = 0.398942280444 - 0.399903438504 * PFZ
+      PFZ = 0.5 - _x * PFZ
+    if _z < 0.0:
+      PFZ = 1 - PFZ
+    return PFZ
+
   def zFromP(self, _p):
     """ Computs a Z statistic for a P value
         Parameters:
@@ -434,5 +466,21 @@ class LogisticRegression:
                            self.mdblToler,
                            self.mdblConv,
                            False)
+
+    for ev in inputVariableList['exposureVariables']:
+      self.logisticResults.Variables.append(ev)
+    self.logisticResults.Variables.append('CONSTANT')
+    mdblP = self.zFromP(0.025)
+    i = 0
+    for B in self.mMatrixLikelihood.get_mdblaB():
+      self.logisticResults.Beta.append(B)
+      self.logisticResults.SE.append(self.mMatrixLikelihood.get_mdblaInv()[i][i] ** 0.5)
+      self.logisticResults.OR.append(math.exp(B))
+      moe = mdblP * self.logisticResults.SE[i]
+      self.logisticResults.ORLCL.append(math.exp(B - moe))
+      self.logisticResults.ORUCL.append(math.exp(B + moe))
+      self.logisticResults.Z.append(B / self.logisticResults.SE[i])
+      self.logisticResults.PZ.append(2.0 * self.pFromZ(abs(self.logisticResults.Z[i])))
+      i += 1
 
     return self.logisticResults

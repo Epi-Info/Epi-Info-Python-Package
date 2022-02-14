@@ -620,6 +620,15 @@ class LogisticRegressionResults:
   def __init__(self):
     self._Rows = []
     self._ErrorMessage = ''
+    self.Variables = []
+    self.Beta = []
+    self.SE = []
+    self.OR = []
+    self.ORLCL = []
+    self.ORUCL = []
+    self.Z = []
+    self.PZ = []
+
   def get_Rows(self):
     return self._Rows
   def set_Rows(self, v):
