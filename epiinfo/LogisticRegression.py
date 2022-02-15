@@ -36,6 +36,45 @@ class LogisticRegression:
 
     self.mMatrixLikelihood = EIMatrix()
 
+  def PValFromChiSq(self, x, df):
+    """ Computs a P value for a Chi Squared statistic
+        with degrees of freedom.
+        Parameters:
+          x (float): Chi Squared statistic
+          df (float): Degrees of Freedom
+        Returns: float
+    """
+    j = 0.0
+    k = 0.0
+    l = 0.0
+    m = 0.0
+    pi = math.pi
+    absx = x
+    if x < 0.0:
+      absx = -x
+    if x < 0.000000001 or df < 1.0:
+      return 1.0
+    rr = 1.0
+    ii = int(df * 1)
+    while ii >= 2:
+      rr *= float(ii * 1.0)
+      ii -= 2
+    k = math.exp(math.floor((df + 1.0) * 0.5) * math.log(absx) - x * 0.5) / rr
+    if k < 0.00001:
+      return 0.0
+    if math.floor(df * 0.5) == df * 0.5:
+      j = 1.0
+    else:
+      j = (2.0 / x / pi) ** 0.5
+    l = 1.0
+    m = 1.0
+    if math.isnan(x) == False and math.isinf(x) == False:
+      while m >= 0.00000001:
+        df += 2.0
+        m = m * x / df
+        l = l + m
+    return round(10000 * (1 - j * k * l)) / 10000
+
   def pFromZ(self, _z):
     """ Computs a P value for a Z statistic
         Parameters:
@@ -483,12 +522,16 @@ class LogisticRegression:
       self.logisticResults.PZ.append(2.0 * self.pFromZ(abs(self.logisticResults.Z[i])))
       i += 1
 
-    ldblScore = self.mMatrixLikelihood.get_mdblScore()
-    lldblDF = len(self.mMatrixLikelihood.get_mdblaB())
+    self.logisticResults.Score = self.mMatrixLikelihood.get_mdblScore()
+    self.logisticResults.ScoreDF = len(self.mMatrixLikelihood.get_mdblaB())
     if self.mboolIntercept:
-      lldblDF -= 1
-    lllr = 2.0 * (self.mMatrixLikelihood.get_mdbllllast()[0] - self.mMatrixLikelihood.get_mdblllfst()[0])
-    minusTwoLogLikelihood = -2.0 * self.mMatrixLikelihood.get_mdbllllast()[0]
-    print(ldblScore, lldblDF, lllr, minusTwoLogLikelihood)
+      self.logisticResults.ScoreDF -= 1
+    self.logisticResults.ScoreP = self.PValFromChiSq(self.logisticResults.Score, self.logisticResults.ScoreDF)
+    self.logisticResults.LikelihoodRatio = 2.0 * (self.mMatrixLikelihood.get_mdbllllast()[0] - self.mMatrixLikelihood.get_mdblllfst()[0])
+    self.logisticResults.LikelihoodRatioDF = self.logisticResults.ScoreDF
+    self.logisticResults.LikelihoodRatioP = self.PValFromChiSq(self.logisticResults.LikelihoodRatio, self.logisticResults.LikelihoodRatioDF)
+    self.logisticResults.MinusTwoLogLikelihood = -2.0 * self.mMatrixLikelihood.get_mdbllllast()[0]
+    self.logisticResults.Iterations = self.mMatrixLikelihood.get_mintIterations()
+    self.logisticResults.CasesIncluded = self.NumRows
 
     return self.logisticResults

@@ -631,6 +631,15 @@ class LogisticRegressionResults:
     self.ORUCL = []
     self.Z = []
     self.PZ = []
+    self.Score = None
+    self.ScoreDF = None
+    self.ScoreP = None
+    self.LikelihoodRatio = None
+    self.LikelihoodRatioDF = None
+    self.LikelihoodRatioP = None
+    self.MinusTwoLogLikelihood = None
+    self.Iterations = None
+    self.CasesIncluded = None
 
   def get_Rows(self):
     return self._Rows
