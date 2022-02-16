@@ -167,6 +167,7 @@ class LogisticRegression:
     self.mstraBoolean = ['No', 'Yes', 'Missing']
     self.mstrMatchVar = ""
     self.mstrWeightVar = ""
+    self.mstrGroupVar = None
     self.mstrDependVar = ""
     self.mstraTerms = []
     self.mStrADiscrete = []
@@ -184,6 +185,7 @@ class LogisticRegression:
         self.terms += 1
       if str(inputVariableList[key]).lower() == "matchvar":
         self.mstrMatchVar = key
+        self.mstrGroupVar = key
       if str(inputVariableList[key]).lower() == "weightvar":
         self.mstrWeightVar = key
       if str(inputVariableList[key]).lower() == "dependvar":
@@ -391,6 +393,8 @@ class LogisticRegression:
     columnsQueried = 1 + len(independentVariables) + 1
     for rowi in self.currentTable:
       row = {k : v for k, v in rowi.items() if k in [outcomeVariable] + independentVariables}
+      if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
+        row[self.mstrGroupVar] = rowi[self.mstrGroupVar]
       row['RecStatus'] = 1
       mutableCurrentTable.append(row)
 
@@ -409,8 +413,12 @@ class LogisticRegression:
     currentTableMutable = []
     for rd in mutableCurrentTable:
       rl = []
-      for k, v in rd.items():
-        rl.append(v)
+      rl.append(rd[outcomeVariable])
+      if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
+        rl.append(rd[self.mstrGroupVar])
+      for iV in independentVariables:
+        rl.append(rd[iV])
+      rl.append(rd['RecStatus'])
       currentTableMutable.append(rl)
     self.checkIndependentVariables(currentTableMutable, independentVariables)
     self.currentTable = []
@@ -509,6 +517,8 @@ class LogisticRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
+    if self.mboolIntercept == False or (self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0):
+      del self.logisticResults.Variables[-1]
     mdblP = self.zFromP(0.025)
     i = 0
     for B in self.mMatrixLikelihood.get_mdblaB():
