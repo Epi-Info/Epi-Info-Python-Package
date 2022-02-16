@@ -204,6 +204,10 @@ class LogisticRegression:
         self.discrete += 1
         self.mstraTerms.append(key)
         self.terms += 1
+      if key == "dummies":
+        self.dummiesNSMA = []
+        for dum in inputVariableList[key]:
+          self.dummiesNSMA.append(dum)
 
   def removeRecordsWithNulls(self, currentTableMA):
     """ Removes records having null values in analysis variables
