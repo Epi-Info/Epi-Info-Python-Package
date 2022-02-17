@@ -421,13 +421,21 @@ class LogisticRegression:
       if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
         rl.append(rd[self.mstrGroupVar])
       for iV in independentVariables:
-        rl.append(rd[iV])
+        if '*' in iV:
+          iVList = iV.replace(" ", "").split("*")
+          iVProd = int(rd[iVList[0]])
+          for ivli in iVList[1:]:
+            iVProd *= int(rd[ivli])
+          rl.append(iVProd)
+        else:
+          rl.append(rd[iV])
       rl.append(rd['RecStatus'])
       currentTableMutable.append(rl)
     self.checkIndependentVariables(currentTableMutable, independentVariables)
     self.currentTable = []
     for ctmr in currentTableMutable:
       self.currentTable.append(ctmr)
+    print(self.currentTable)
 
     return True
 
