@@ -395,10 +395,21 @@ class LogisticRegression:
     mutableCurrentTable = []
     lStrAVarNames = [iV for iV in independentVariables]
     columnsQueried = 1 + len(independentVariables) + 1
+    # Ensure interaction terms are included
+    allCovariates = []
+    for iV in independentVariables:
+      if '*' not in iV:
+        if iV not in allCovariates:
+          allCovariates.append(iV)
+      else:
+        iVList = iV.replace(" ", "").split("*")
+        for ivli in iVList:
+          if ivli not in allCovariates:
+            allCovariates.append(ivli)
     for rowi in self.currentTable:
-      row = {k : v for k, v in rowi.items() if k in [outcomeVariable] + independentVariables}
-      if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
-        row[self.mstrGroupVar] = rowi[self.mstrGroupVar]
+      row = {k : v for k, v in rowi.items() if k in [outcomeVariable] + allCovariates}
+      #if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
+      #  row[self.mstrGroupVar] = rowi[self.mstrGroupVar]
       row['RecStatus'] = 1
       mutableCurrentTable.append(row)
 
@@ -423,9 +434,9 @@ class LogisticRegression:
       for iV in independentVariables:
         if '*' in iV:
           iVList = iV.replace(" ", "").split("*")
-          iVProd = int(rd[iVList[0]])
+          iVProd = float(rd[iVList[0]])
           for ivli in iVList[1:]:
-            iVProd *= int(rd[ivli])
+            iVProd *= float(rd[ivli])
           rl.append(iVProd)
         else:
           rl.append(rd[iV])
@@ -435,7 +446,6 @@ class LogisticRegression:
     self.currentTable = []
     for ctmr in currentTableMutable:
       self.currentTable.append(ctmr)
-    print(self.currentTable)
 
     return True
 
