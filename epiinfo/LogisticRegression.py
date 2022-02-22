@@ -397,15 +397,21 @@ class LogisticRegression:
     columnsQueried = 1 + len(independentVariables) + 1
     # Ensure interaction terms are included
     allCovariates = []
+    soloCovariates = []
+    interactionCovariates = []
     for iV in independentVariables:
       if '*' not in iV:
         if iV not in allCovariates:
           allCovariates.append(iV)
+        if iV not in soloCovariates:
+          soloCovariates.append(iV)
       else:
         iVList = iV.replace(" ", "").split("*")
         for ivli in iVList:
           if ivli not in allCovariates:
             allCovariates.append(ivli)
+          if ivli not in interactionCovariates:
+            interactionCovariates.append(ivli)
     for rowi in self.currentTable:
       row = {k : v for k, v in rowi.items() if k in [outcomeVariable] + allCovariates}
       #if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
@@ -426,23 +432,38 @@ class LogisticRegression:
     if self.outcomeOneZero(mutableCurrentTable) == False:
       return False
     currentTableMutable = []
+    interactionTableMutable = []
     for rd in mutableCurrentTable:
       rl = []
+      rlindep = []
       rl.append(rd[outcomeVariable])
+      rlindep.append(rd[outcomeVariable])
       if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
         rl.append(rd[self.mstrGroupVar])
-      for iV in independentVariables:
-        if '*' in iV:
-          iVList = iV.replace(" ", "").split("*")
-          iVProd = float(rd[iVList[0]])
-          for ivli in iVList[1:]:
-            iVProd *= float(rd[ivli])
-          rl.append(iVProd)
-        else:
+        rlindep.append(rd[self.mstrGroupVar])
+      #for iV in independentVariables:
+      for iV in allCovariates:
+        #if '*' in iV:
+        #  iVList = iV.replace(" ", "").split("*")
+        #  iVProd = float(rd[iVList[0]])
+        #  for ivli in iVList[1:]:
+        #    iVProd *= float(rd[ivli])
+        #  rl.append(iVProd)
+        #else:
+        #  rl.append(rd[iV])
+        if iV in soloCovariates:
           rl.append(rd[iV])
+        if iV in interactionCovariates:
+          rlindep.append(rd[iV])
       rl.append(rd['RecStatus'])
+      rlindep.append(rd['RecStatus'])
       currentTableMutable.append(rl)
-    self.checkIndependentVariables(currentTableMutable, independentVariables)
+      interactionTableMutable.append(rlindep)
+    self.checkIndependentVariables(currentTableMutable, soloCovariates)
+    self.checkIndependentVariables(interactionTableMutable, interactionCovariates)
+    independentVariables.clear()
+    for sC in soloCovariates:
+      independentVariables.append(sC)
     self.currentTable = []
     for ctmr in currentTableMutable:
       self.currentTable.append(ctmr)
