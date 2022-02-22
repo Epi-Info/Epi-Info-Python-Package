@@ -331,7 +331,7 @@ class LogisticRegression:
     variablesNeedingDummies = []
     valuesForDummies = []
     rowOne = currentTableMA[0]
-    for j in range(1, len(rowOne)):
+    for j in range(1, len(rowOne) - 1):
       isOneZero = True
       isYesNo = True
       isOneTwo = True
@@ -380,7 +380,7 @@ class LogisticRegression:
             valuesForThisJ.append(lnsmaij)
         if len(valuesForThisJ) > 1:
           valuesForThisJ.sort()
-          valuesForDummies += valuesForThisJ[1:]
+          valuesForDummies.append(valuesForThisJ[1:])
     if len(variablesNeedingDummies) > 0:
       self.makeDummies(currentTableMA, variablesNeedingDummies, valuesForDummies, independentVariables)
 
