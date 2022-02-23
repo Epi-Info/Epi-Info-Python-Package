@@ -280,12 +280,13 @@ class LogisticRegression:
 
     return True
 
-  def makeDummies(self, currentTableMA, variablesNeedingDummies, valuesForDummies, independentVariables):
+  def makeDummies(self, currentTableMA, variablesNeedingDummies, valuesForDummies, referencesForDummies, independentVariables):
     """ Creates dummy variables for independent variables
         Parameters:
           currentTableMA (list of lists)
           variablesNeetingDummies (list)
           valuesForDummies (list)
+          referencesForDummies (list)
           independentVariables (list)
         Returns: bool
     """
@@ -313,7 +314,7 @@ class LogisticRegression:
           else:
             nsmaij[indexOfVariable + k] = '0'
           if j == 0:
-            newIndependentVariables[indexOfVariable - 1 + k] = valuesi[k]
+            newIndependentVariables[indexOfVariable - 1 + k] = valuesi[k] + ':' + referencesForDummies[i]
           k -= 1
         currentTableMA[j] = nsmaij
         j += 1
@@ -328,8 +329,10 @@ class LogisticRegression:
           independentVariables (list)
         Returns: bool
     """
+    dummiesMap = {}
     variablesNeedingDummies = []
     valuesForDummies = []
+    referencesForDummies = []
     rowOne = currentTableMA[0]
     for j in range(1, len(rowOne) - 1):
       isOneZero = True
@@ -353,6 +356,7 @@ class LogisticRegression:
             isTrueFalse = False
         if isNumeric:
           isNumeric = self.is_a_number(loutcome)
+      dummiesMap[independentVariables[j - 1]] = [independentVariables[j - 1]]
       if isOneTwo:
         for lsna in currentTableMA:
           if str(lsna[j]) == '1':
@@ -381,8 +385,12 @@ class LogisticRegression:
         if len(valuesForThisJ) > 1:
           valuesForThisJ.sort()
           valuesForDummies.append(valuesForThisJ[1:])
+          dummiesMap[independentVariables[j - 1]] = valuesForThisJ[1:]
+          referencesForDummies.append(valuesForThisJ[0])
     if len(variablesNeedingDummies) > 0:
-      self.makeDummies(currentTableMA, variablesNeedingDummies, valuesForDummies, independentVariables)
+      self.makeDummies(currentTableMA, variablesNeedingDummies, valuesForDummies, referencesForDummies, independentVariables)
+
+    return dummiesMap
 
   def getCurrentTable(self, outcomeVariable, independentVariables):
     """ Creates an analysis dataset having a 0/1 dependent variable
@@ -399,6 +407,7 @@ class LogisticRegression:
     allCovariates = []
     soloCovariates = []
     interactionCovariates = []
+    interactionsList = []
     for iV in independentVariables:
       if '*' not in iV:
         if iV not in allCovariates:
@@ -406,7 +415,8 @@ class LogisticRegression:
         if iV not in soloCovariates:
           soloCovariates.append(iV)
       else:
-        iVList = iV.replace(" ", "").split("*")
+        interactionsList.append(iV.replace(" ", ""))
+        iVList = interactionsList[-1].split("*")
         for ivli in iVList:
           if ivli not in allCovariates:
             allCovariates.append(ivli)
@@ -459,8 +469,10 @@ class LogisticRegression:
       rlindep.append(rd['RecStatus'])
       currentTableMutable.append(rl)
       interactionTableMutable.append(rlindep)
-    self.checkIndependentVariables(currentTableMutable, soloCovariates)
-    self.checkIndependentVariables(interactionTableMutable, interactionCovariates)
+    soloDummiesMap = self.checkIndependentVariables(currentTableMutable, soloCovariates)
+    interactionDummiesMap = self.checkIndependentVariables(interactionTableMutable, interactionCovariates)
+    print('soloDummiesMap:',soloDummiesMap)
+    print('interactionDummiesMap:',interactionDummiesMap)
     independentVariables.clear()
     for sC in soloCovariates:
       independentVariables.append(sC)
