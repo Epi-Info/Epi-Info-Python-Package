@@ -1,6 +1,7 @@
 from scipy.stats import t as tdist
 import math
 import time
+import itertools
 from .randata import randata
 from .RegressionUtilities import *
 
@@ -471,8 +472,33 @@ class LogisticRegression:
       interactionTableMutable.append(rlindep)
     soloDummiesMap = self.checkIndependentVariables(currentTableMutable, soloCovariates)
     interactionDummiesMap = self.checkIndependentVariables(interactionTableMutable, interactionCovariates)
-    print('soloDummiesMap:',soloDummiesMap)
+    interactionCovariatesWithoutRefs = []
+    for iC in interactionCovariates:
+      if ':' in iC:
+        interactionCovariatesWithoutRefs.append(iC.split(':')[0])
+      else:
+        interactionCovariatesWithoutRefs.append(iC)
+    tableWithInteractions = []
+    expandedInteractionsList = []
+    valueslists = []
+    for iLi in interactionsList:
+      valueslist = []
+      for iLiItem in iLi.split('*'):
+        valueslist.append(interactionDummiesMap[iLiItem])
+      valueslists.append(valueslist)
+    combos = []
+    for vl in valueslists:
+      combos.append(list(itertools.product(*vl)))
+    for c in combos:
+      eI = []
+      for t in c:
+        expandedInteractionsList.append('*'.join(list(t)))
+    print('interactionsList:',interactionsList)
+    print('expandedInteractionsList:',expandedInteractionsList)
     print('interactionDummiesMap:',interactionDummiesMap)
+    print('interactionCovariates:',interactionCovariates)
+    print('interactionCovariatesWithoutRefs:',interactionCovariatesWithoutRefs)
+    print('interactionTableMutable[:4]:',interactionTableMutable[:4])
     independentVariables.clear()
     for sC in soloCovariates:
       independentVariables.append(sC)
