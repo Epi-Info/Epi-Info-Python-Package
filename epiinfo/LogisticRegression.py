@@ -560,6 +560,46 @@ class LogisticRegression:
       for i in range(len(self.lStrAVarNames)):
         mVarArray.append("")
 
+  def IOR(self, cm, bLabels, B, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          DataArray (list of lists)
+        Returns: str
+    """
+    iorOut = ""
+    noInteractions = True
+    for bLabel in bLabels:
+      if noInteractions and bLabel is not None and '*' in bLabel:
+        noInteractions = False
+    if noInteractions:
+      return iorOut
+
+    iaTerms = 1
+    for bLabel in bLabels:
+      if bLabel is not None and '*' in bLabel:
+        iat = bLabel.count('*')
+        if iat > iaTerms:
+          iaTerms = iat
+    if iaTerms > 1:
+      return iorOut
+    iaTerms += 1
+
+    lastVar1 = ""
+    lastVar2 = ""
+    interactions = 0
+    for bLabel in bLabels:
+      if bLabel is not None and '*' in bLabel:
+        lastVar1 = bLabel.split('*')[0]
+        lastVar2 = bLabel.split('*')[1]
+        interactions += 1
+        iorOut += self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
+
+    return iorOut
+
   def doLogistic(self, inputVariableList, dataTable):
     """ Executes the supporting functions to run the analysis
         Parameters:
@@ -614,6 +654,7 @@ class LogisticRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
+    self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB, self.currentTable)
     print(self.mMatrixLikelihood.get_mdblaInv())
     print(self.logisticResults.Variables)
     print(self.mMatrixLikelihood.get_mdblaB())
