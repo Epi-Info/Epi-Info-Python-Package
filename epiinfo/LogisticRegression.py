@@ -493,12 +493,6 @@ class LogisticRegression:
       eI = []
       for t in c:
         expandedInteractionsList.append('*'.join(list(t)))
-    print('interactionsList:',interactionsList)
-    print('expandedInteractionsList:',expandedInteractionsList)
-    print('interactionDummiesMap:',interactionDummiesMap)
-    print('interactionCovariates:',interactionCovariates)
-    print('interactionCovariatesWithoutRefs:',interactionCovariatesWithoutRefs)
-    print('interactionTableMutable[:4]:',interactionTableMutable[:4])
     interactedTable = []
     for itmi in interactionTableMutable:
       itr = []
@@ -517,8 +511,6 @@ class LogisticRegression:
       for eilili in eilil:
         icol += interactionCovariates[interactionCovariatesWithoutRefs.index(eilili)] + "*"
       interactedColumns.append(icol[:-1])
-    print('interactedColumns:',interactedColumns)
-    print('interactedTable[:4]:',interactedTable[:4])
     independentVariables.clear()
     for sC in soloCovariates:
       independentVariables.append(sC)
