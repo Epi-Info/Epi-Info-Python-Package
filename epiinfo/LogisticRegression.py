@@ -499,12 +499,36 @@ class LogisticRegression:
     print('interactionCovariates:',interactionCovariates)
     print('interactionCovariatesWithoutRefs:',interactionCovariatesWithoutRefs)
     print('interactionTableMutable[:4]:',interactionTableMutable[:4])
+    interactedTable = []
+    for itmi in interactionTableMutable:
+      itr = []
+      for eili in expandedInteractionsList:
+        datum = 1.0
+        eilil = eili.split('*')
+        for eilili in eilil:
+          indexofcolumn = interactionCovariatesWithoutRefs.index(eilili) + 1
+          datum *= float(itmi[indexofcolumn])
+        itr.append(datum)
+      interactedTable.append(itr + [1])
+    interactedColumns = []
+    for eili in expandedInteractionsList:
+      eilil = eili.split('*')
+      icol = ""
+      for eilili in eilil:
+        icol += interactionCovariates[interactionCovariatesWithoutRefs.index(eilili)] + "*"
+      interactedColumns.append(icol[:-1])
+    print('interactedColumns:',interactedColumns)
+    print('interactedTable[:4]:',interactedTable[:4])
     independentVariables.clear()
     for sC in soloCovariates:
       independentVariables.append(sC)
+    for sC in interactedColumns:
+      independentVariables.append(sC)
     self.currentTable = []
+    ctmrownumber = 0
     for ctmr in currentTableMutable:
-      self.currentTable.append(ctmr)
+      self.currentTable.append(ctmr[:-1] + interactedTable[ctmrownumber])
+      ctmrownumber += 1
 
     return True
 
