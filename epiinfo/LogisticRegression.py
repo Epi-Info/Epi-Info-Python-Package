@@ -614,6 +614,10 @@ class LogisticRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
+    print(self.mMatrixLikelihood.get_mdblaInv())
+    print(self.logisticResults.Variables)
+    print(self.mMatrixLikelihood.get_mdblaB())
+    print(self.currentTable[:4])
     if self.mboolIntercept == False or (self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0):
       del self.logisticResults.Variables[-1]
     mdblP = self.zFromP(0.025)
