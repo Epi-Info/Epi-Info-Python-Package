@@ -560,6 +560,84 @@ class LogisticRegression:
       for i in range(len(self.lStrAVarNames)):
         mVarArray.append("")
 
+  def getInteractionIndexes(self, interactions, iaTerms, bLabels):
+    """ Returns the index of a variable
+        Parameters:
+          interactions (int)
+          iaTerms (int)
+          bLabels (list)
+        Returns: list
+    """
+    interactionIndexes = []
+    if iaTerms == 2 and interactions == 1:
+      i = len(bLabels) - 1
+      while i >= 0:
+        if '*' in bLabels[i]:
+          if len(interactionIndexes) == 0:
+            interactionIndexes.append(i)
+          else:
+            interactionIndexes.insert(0, i)
+        i -= 1
+    return interactionIndexes
+
+  def getContinuousIndex(self, var, bLabels):
+    """ Returns the index of a variable
+        Parameters:
+          var (str)
+          bLabels (list)
+        Returns: int
+    """
+    contIdx = 0
+    i = len(bLabels) - 1
+    while i >= 0:
+      if bLabels[i] == var:
+        contIdx = i
+      i -= 1
+    return contIdx
+
+  def getColumnMean(self, columnNumber, DataArray):
+    """ Computes the mean of a column
+        Parameters:
+          columnNumber (int)
+          DataArray (list of lists)
+        Returns: float
+    """
+    columnSum = 0.0
+    for row in DataArray:
+      columnSum += float(row[columnNumber])
+    return columnSum / float(len(DataArray))
+
+  def NoDummyVariables(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          lastVar1 (str)
+          lastVar2 (str)
+          interactions (int)
+          iaTerms (int)
+          DataArray (list of lists)
+        Returns: list
+    """
+    Z = self.zFromP(0.025)
+    column2 = 1
+    i = 0
+    for bLabel in bLabels:
+      if bLabel is not None and bLabel == lastVar2:
+        column2 += i
+      i += 1
+    ref2 = self.getColumnMean(column2, DataArray)
+    singleIndex = self.getContinuousIndex(lastVar1, bLabels)
+    interactionIndexes = self.getInteractionIndexes(interactions, iaTerms, bLabels)
+    est = B[singleIndex] + ref2 * B[interactionIndexes[0]]
+    variance = cm[singleIndex][singleIndex] + ref2 ** 2.0 * cm[interactionIndexes[0]][interactionIndexes[0]] + 2.0 * ref2 * cm[singleIndex][interactionIndexes[0]]
+    lcl = est - Z * variance ** 0.5
+    ucl = est + Z * variance ** 0.5
+
+    return [est, variance, lcl, ucl]
+
   def IOR(self, cm, bLabels, B, DataArray):
     """ Computes odds ratios and CIs for interaction
         terms holding one value fixed.
@@ -568,9 +646,9 @@ class LogisticRegression:
           bLabels (list)
           B (list)
           DataArray (list of lists)
-        Returns: str
+        Returns: list
     """
-    iorOut = ""
+    iorOut = []
     noInteractions = True
     for bLabel in bLabels:
       if noInteractions and bLabel is not None and '*' in bLabel:
@@ -596,7 +674,7 @@ class LogisticRegression:
         lastVar1 = bLabel.split('*')[0]
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
-        iorOut += self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
+        iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
 
     return iorOut
 
@@ -654,11 +732,7 @@ class LogisticRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
-    self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB, self.currentTable)
-    print(self.mMatrixLikelihood.get_mdblaInv())
-    print(self.logisticResults.Variables)
-    print(self.mMatrixLikelihood.get_mdblaB())
-    print(self.currentTable[:4])
+    print(self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB(), self.currentTable))
     if self.mboolIntercept == False or (self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0):
       del self.logisticResults.Variables[-1]
     mdblP = self.zFromP(0.025)
