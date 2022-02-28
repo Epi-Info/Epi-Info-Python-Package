@@ -29,6 +29,7 @@ class LogisticRegression:
     self.lintweight = None
     self.NumRows = None
     self.NumColumns = None
+    self.ColumnsAndValues = {}
 
     self.currentTable = None
     self.lStrAVarNames = None
@@ -522,6 +523,34 @@ class LogisticRegression:
       self.currentTable.append(ctmr[:-1] + interactedTable[ctmrownumber])
       ctmrownumber += 1
 
+    # Set the values in ColumnsAndValues
+    colindex = 0
+    for col in independentVariables:
+      cd = {'number' : colindex}
+      if '*' not in col:
+        if ':' in col:
+          cd['ref'] = col.split(':')[1]
+          cd['compare'] = col.split(':')[0]
+        else:
+          uniquevalues = []
+          for datarow in self.currentTable:
+            if len(uniquevalues) > 2:
+              break
+            if datarow[colindex] not in uniquevalues:
+              uniquevalues.append(datarow[colindex])
+          if len(uniquevalues) == 2:
+            uniquevalues.sort()
+            cd['ref'] = uniquevalues[0]
+            cd['compare'] = uniquevalues[1]
+          else:
+            cd['ref'] = None
+            cd['compare'] = None
+      else:
+        cd['ref'] = None
+        cd['compare'] = None
+      self.ColumnsAndValues[col] = cd
+      colindex += 1
+
     return True
 
   def getRawData(self):
@@ -607,6 +636,58 @@ class LogisticRegression:
       columnSum += float(row[columnNumber])
     return columnSum / float(len(DataArray))
 
+  def getRef(self, var, bLabels):
+    """ Returns a variable's reference value
+        Parameters:
+          var (str)
+          BLabels (list)
+        Returns: float
+    """
+    refValue = None
+    return refValue
+
+  def TwoDummyVariables(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          lastVar1 (str)
+          lastVar2 (str)
+          interactions (int)
+          iaTerms (int)
+          DataArray (list of lists)
+        Returns: list
+    """
+    iorOut = []
+    Z = self.zFromP(0.025)
+    ref1 = self.ColumnsAndValues[lastVar1]['ref']
+    ref2 = self.ColumnsAndValues[lastVar2]['ref']
+    otherValues1 = [self.ColumnsAndValues[lastVar1]['number'], self.ColumnsAndValues[lastVar1]['compare']]
+    otherValues2 = [self.ColumnsAndValues[lastVar2]['number'], self.ColumnsAndValues[lastVar2]['compare']]
+    est = B[int(otherValues1[0])]
+    lcl = est - Z * cm[int(otherValues1[0])][int(otherValues1[0])] ** 0.5
+    ucl = est + Z * cm[int(otherValues1[0])][int(otherValues1[0])] ** 0.5
+    iorOut.append([lastVar1, str(otherValues1[1]) + ' vs ' + str(ref1) + ' at ' + lastVar2 + '=' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
+    # REVISIT: section for more than one dummy variable for an initial variable
+    ####
+    interactionIndexes = []
+    multiple = int(len(otherValues2) / 2)
+    for bLabel in bLabels:
+      if '*' in bLabel and lastVar1 in bLabel and lastVar2 in bLabel:
+        interactionIndexes.append(self.ColumnsAndValues[bLabel]['number'])
+    for k in range(int(len(otherValues2) / 2)):
+      for i in range(int(len(otherValues1) / 2)):
+        est = (B[int(otherValues1[2 * i])] + B[int(interactionIndexes[multiple * i + k])])
+        variance = cm[int(otherValues1[2 * i])][int(otherValues1[2 * i])] + \
+                   cm[interactionIndexes[multiple * i + k]][interactionIndexes[multiple * i + k]] + \
+                   2 * cm[int(otherValues1[2 * i])][interactionIndexes[multiple * i + k]]
+        lcl = est - Z * variance ** 0.5
+        ucl = est + Z * variance ** 0.5
+        iorOut.append([lastVar1, str(otherValues1[2 * i + 1]) + ' vs ' + str(ref1) + ' at ' + lastVar2 + '=' + str(otherValues2[2 * k + 1]), math.exp(est), math.exp(lcl), math.exp(ucl)])
+    return iorOut
+
   def NoDummyVariables(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
     """ Computes odds ratios and CIs for interaction
         terms holding one value fixed.
@@ -674,7 +755,7 @@ class LogisticRegression:
         lastVar1 = bLabel.split('*')[0]
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
-        iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
+        iorOut += (self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
 
     return iorOut
 
@@ -732,7 +813,7 @@ class LogisticRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
-    print(self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB(), self.currentTable))
+    self.logisticResults.InteractionOR = self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB(), self.currentTable)
     if self.mboolIntercept == False or (self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0):
       del self.logisticResults.Variables[-1]
     mdblP = self.zFromP(0.025)

@@ -626,6 +626,7 @@ class LogisticRegressionResults:
     self.MinusTwoLogLikelihood = None
     self.Iterations = None
     self.CasesIncluded = None
+    self.InteractionOR = None
 
   def get_Rows(self):
     return self._Rows
