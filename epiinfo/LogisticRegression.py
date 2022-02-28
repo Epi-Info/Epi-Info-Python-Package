@@ -536,8 +536,8 @@ class LogisticRegression:
           for datarow in self.currentTable:
             if len(uniquevalues) > 2:
               break
-            if datarow[colindex] not in uniquevalues:
-              uniquevalues.append(datarow[colindex])
+            if datarow[colindex + 1] not in uniquevalues:
+              uniquevalues.append(datarow[colindex + 1])
           if len(uniquevalues) == 2:
             uniquevalues.sort()
             cd['ref'] = uniquevalues[0]
@@ -755,7 +755,16 @@ class LogisticRegression:
         lastVar1 = bLabel.split('*')[0]
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
-        iorOut += (self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
+    oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
+    twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
+    if oneIsDummy and twoIsDummy:
+      iorOut += self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
+    elif oneIsDummy:
+      pass
+    elif twoIsDummy:
+      pass
+    else:
+      iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
 
     return iorOut
 
