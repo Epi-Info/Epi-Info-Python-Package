@@ -682,7 +682,7 @@ class LogisticRegression:
                  2 * ref2 * cm[int(otherValues1[2 * i])][interactionIndexes[i]]
       lcl = est - Z * variance ** 0.5
       ucl = est + Z * variance ** 0.5
-      iorOut.append([lastVar1 + '*' + lastVar2, math.exp(est), math.exp(lcl), math.exp(ucl)])
+      iorOut.append([lastVar1, str(ref1) + ' vs ' + str(otherValues1[2 * i + 1]) + ' at ' + lastVar2 + '=' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
     return iorOut
 
   def DummyLast(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
