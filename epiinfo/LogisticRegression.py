@@ -646,6 +646,81 @@ class LogisticRegression:
     refValue = None
     return refValue
 
+  def DummyFirst(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          lastVar1 (str)
+          lastVar2 (str)
+          interactions (int)
+          iaTerms (int)
+          DataArray (list of lists)
+        Returns: list
+    """
+    iorOut = []
+    Z = self.zFromP(0.025)
+    ref1 = self.ColumnsAndValues[lastVar1]['ref']
+    column2 = 1
+    i = 0
+    for bLabel in bLabels:
+      if bLabel == lastVar2:
+        column2 += i
+      i += 1
+    ref2 = self.getColumnMean(column2, DataArray)
+    otherValues1 = [self.ColumnsAndValues[lastVar1]['number'], self.ColumnsAndValues[lastVar1]['compare']]
+    interactionIndexes = []
+    for bLabel in bLabels:
+      if '*' in bLabel and lastVar1 in bLabel and lastVar2 in bLabel:
+        interactionIndexes.append(self.ColumnsAndValues[bLabel]['number'])
+    for i in range(int(len(otherValues1) / 2)):
+      est = -B[int(otherValues1[2 * i])] - ref2 * B[interactionIndexes[i]]
+      variance = cm[int(otherValues1[2 * i])][int(otherValues1[2 * i])] +\
+                 ref2 ** 2.0 * cm[interactionIndexes[i]][interactionIndexes[i]] +\
+                 2 * ref2 * cm[int(otherValues1[2 * i])][interactionIndexes[i]]
+      lcl = est - Z * variance ** 0.5
+      ucl = est + Z * variance ** 0.5
+      iorOut.append([lastVar1 + '*' + lastVar2, math.exp(est), math.exp(lcl), math.exp(ucl)])
+    return iorOut
+
+  def DummyLast(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          lastVar1 (str)
+          lastVar2 (str)
+          interactions (int)
+          iaTerms (int)
+          DataArray (list of lists)
+        Returns: list
+    """
+    iorOut = []
+    Z = self.zFromP(0.025)
+    ref1 = self.ColumnsAndValues[lastVar1]['ref']
+    singleIndex = self.getContinuousIndex(lastVar2, bLabels)
+    interactionIndexes = []
+    for bLabel in bLabels:
+      if '*' in bLabel and lastVar1 in bLabel and lastVar2 in bLabel:
+        interactionIndexes.append(self.ColumnsAndValues[bLabel]['number'])
+    otherValues1 = [self.ColumnsAndValues[lastVar1]['number'], self.ColumnsAndValues[lastVar1]['compare']]
+    est = B[singleIndex]
+    variance0 = cm[singleIndex][singleIndex]
+    lcl0 = est - Z * variance0 ** 0.5
+    ucl0 = est + Z * variance0 ** 0.5
+    iorOut.append([lastVar2 + '*' + lastVar1, lastVar2 + ' at ' + lastVar1 + '=' + str(ref1), math.exp(est), math.exp(lcl0), math.exp(ucl0)])
+    for i in range(int(len(otherValues1) / 2)):
+      est = B[singleIndex] + B[interactionIndexes[i]]
+      variance = cm[singleIndex][singleIndex] + cm[interactionIndexes[i]][interactionIndexes[i]] + 2 * cm[singleIndex][interactionIndexes[i]]
+      lcl = est - Z * variance ** 0.5
+      ucl = est + Z * variance ** 0.5
+      iorOut.append([lastVar2 + '*' + lastVar1, lastVar2 + ' at ' + lastVar1 + '=' + str(otherValues1[2 * i + 1]), math.exp(est), math.exp(lcl), math.exp(ucl)])
+    return iorOut
+
   def TwoDummyVariables(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
     """ Computes odds ratios and CIs for interaction
         terms holding one value fixed.
@@ -760,9 +835,9 @@ class LogisticRegression:
     if oneIsDummy and twoIsDummy:
       iorOut += self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
     elif oneIsDummy:
-      pass
+      iorOut += self.DummyFirst(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
     elif twoIsDummy:
-      pass
+      iorOut += self.DummyLast(cm, bLabels, B, lastVar2, lastVar1, interactions, iaTerms, DataArray)
     else:
       iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
 
