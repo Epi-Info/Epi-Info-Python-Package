@@ -777,6 +777,7 @@ class LogisticRegression:
           DataArray (list of lists)
         Returns: list
     """
+    iorOut = []
     Z = self.zFromP(0.025)
     column2 = 1
     i = 0
@@ -786,13 +787,16 @@ class LogisticRegression:
       i += 1
     ref2 = self.getColumnMean(column2, DataArray)
     singleIndex = self.getContinuousIndex(lastVar1, bLabels)
-    interactionIndexes = self.getInteractionIndexes(interactions, iaTerms, bLabels)
+    interactionIndexes = []
+    for bLabel in bLabels:
+      if '*' in bLabel and lastVar1 in bLabel and lastVar2 in bLabel:
+        interactionIndexes.append(self.ColumnsAndValues[bLabel]['number'])
     est = B[singleIndex] + ref2 * B[interactionIndexes[0]]
     variance = cm[singleIndex][singleIndex] + ref2 ** 2.0 * cm[interactionIndexes[0]][interactionIndexes[0]] + 2.0 * ref2 * cm[singleIndex][interactionIndexes[0]]
     lcl = est - Z * variance ** 0.5
     ucl = est + Z * variance ** 0.5
-
-    return [est, variance, lcl, ucl]
+    iorOut.append([lastVar1 + '*' + lastVar2, lastVar1 + ' at ' + lastVar2 + ' = ' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
+    return iorOut
 
   def IOR(self, cm, bLabels, B, DataArray):
     """ Computes odds ratios and CIs for interaction
