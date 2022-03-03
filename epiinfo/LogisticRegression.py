@@ -834,6 +834,8 @@ class LogisticRegression:
         lastVar1 = bLabel.split('*')[0]
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
+    if lastVar1 not in bLabels or lastVar2 not in bLabels:
+      return []
     oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
     twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
     if oneIsDummy and twoIsDummy:
