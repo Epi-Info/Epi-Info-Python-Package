@@ -676,13 +676,13 @@ class LogisticRegression:
       if '*' in bLabel and lastVar1 in bLabel and lastVar2 in bLabel:
         interactionIndexes.append(self.ColumnsAndValues[bLabel]['number'])
     for i in range(int(len(otherValues1) / 2)):
-      est = -B[int(otherValues1[2 * i])] - ref2 * B[interactionIndexes[i]]
+      est = B[int(otherValues1[2 * i])] + ref2 * B[interactionIndexes[i]]
       variance = cm[int(otherValues1[2 * i])][int(otherValues1[2 * i])] +\
                  ref2 ** 2.0 * cm[interactionIndexes[i]][interactionIndexes[i]] +\
                  2 * ref2 * cm[int(otherValues1[2 * i])][interactionIndexes[i]]
       lcl = est - Z * variance ** 0.5
       ucl = est + Z * variance ** 0.5
-      iorOut.append([lastVar1, str(ref1) + ' vs ' + str(otherValues1[2 * i + 1]) + ' at ' + lastVar2 + '=' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
+      iorOut.append([lastVar1, str(otherValues1[2 * i + 1]) + ' vs ' + str(ref1) + ' at ' + lastVar2 + '=' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
     return iorOut
 
   def DummyLast(self, cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray):
