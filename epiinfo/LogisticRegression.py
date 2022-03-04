@@ -194,7 +194,7 @@ class LogisticRegression:
         self.mstrDependVar = key
       if str(inputVariableList[key]).lower() == "groupvar":
         self.mstrGroupVar = key
-      if str(inputVariableList[key]).lower() == "intercept":
+      if str(key).lower() == "intercept":
         self.mboolIntercept = inputVariableList[key]
       if str(inputVariableList[key]).lower() == "p":
         self.mdblP = float(inputVariableList[key])
@@ -520,7 +520,10 @@ class LogisticRegression:
     self.currentTable = []
     ctmrownumber = 0
     for ctmr in currentTableMutable:
-      self.currentTable.append(ctmr[:-1] + interactedTable[ctmrownumber])
+      if self.mboolIntercept:
+        self.currentTable.append(ctmr[:-1] + interactedTable[ctmrownumber])
+      else:
+        self.currentTable.append(ctmr[:-1] + interactedTable[ctmrownumber][:-1])
       ctmrownumber += 1
 
     # Set the values in ColumnsAndValues
