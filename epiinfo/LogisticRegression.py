@@ -380,7 +380,7 @@ class LogisticRegression:
             lsna[j] = 1
           else:
             lsna[j] = 0
-      elif isNumeric == False or independentVariables[j - 1] in self.dummiesNSMA:
+      elif isNumeric == False or independentVariables[j - startCol] in self.dummiesNSMA:
         variablesNeedingDummies.append(j)
         valuesForThisJ = []
         for lnsmai in currentTableMA:
@@ -498,13 +498,16 @@ class LogisticRegression:
       for t in c:
         expandedInteractionsList.append('*'.join(list(t)))
     interactedTable = []
+    addtoindexofcolumn1 = 1
+    if self.mstrMatchVar is not None and len(str(self.mstrMatchVar)) > 0:
+      addtoindexofcolumn1 = 2
     for itmi in interactionTableMutable:
       itr = []
       for eili in expandedInteractionsList:
         datum = 1.0
         eilil = eili.split('*')
         for eilili in eilil:
-          indexofcolumn = interactionCovariatesWithoutRefs.index(eilili) + 1
+          indexofcolumn = interactionCovariatesWithoutRefs.index(eilili) + addtoindexofcolumn1
           datum *= float(itmi[indexofcolumn])
         itr.append(datum)
       interactedTable.append(itr + [1])
@@ -531,6 +534,9 @@ class LogisticRegression:
 
     # Set the values in ColumnsAndValues
     colindex = 0
+    addtocolindex = 1
+    if self.mstrMatchVar is not None and len(str(self.mstrMatchVar)) > 0:
+      addtocolindex = 2
     for col in independentVariables:
       cd = {'number' : colindex}
       if '*' not in col:
@@ -542,8 +548,8 @@ class LogisticRegression:
           for datarow in self.currentTable:
             if len(uniquevalues) > 2:
               break
-            if datarow[colindex + 1] not in uniquevalues:
-              uniquevalues.append(datarow[colindex + 1])
+            if datarow[colindex + addtocolindex] not in uniquevalues:
+              uniquevalues.append(datarow[colindex + addtocolindex])
           if len(uniquevalues) == 2:
             uniquevalues.sort()
             cd['ref'] = uniquevalues[0]
