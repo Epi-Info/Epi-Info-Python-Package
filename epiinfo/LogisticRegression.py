@@ -336,7 +336,10 @@ class LogisticRegression:
     valuesForDummies = []
     referencesForDummies = []
     rowOne = currentTableMA[0]
-    for j in range(1, len(rowOne) - 1):
+    startCol = 1
+    if self.mstrMatchVar is not None and len(str(self.mstrMatchVar)) > 0:
+      startCol = 2
+    for j in range(startCol, len(rowOne) - 1):
       isOneZero = True
       isYesNo = True
       isOneTwo = True
@@ -358,7 +361,7 @@ class LogisticRegression:
             isTrueFalse = False
         if isNumeric:
           isNumeric = self.is_a_number(loutcome)
-      dummiesMap[independentVariables[j - 1]] = [independentVariables[j - 1]]
+      dummiesMap[independentVariables[j - startCol]] = [independentVariables[j - startCol]]
       if isOneTwo:
         for lsna in currentTableMA:
           if str(lsna[j]) == '1':
@@ -426,8 +429,8 @@ class LogisticRegression:
             interactionCovariates.append(ivli)
     for rowi in self.currentTable:
       row = {k : v for k, v in rowi.items() if k in [outcomeVariable] + allCovariates}
-      #if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
-      #  row[self.mstrGroupVar] = rowi[self.mstrGroupVar]
+      if self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0:
+        row[self.mstrGroupVar] = rowi[self.mstrGroupVar]
       row['RecStatus'] = 1
       mutableCurrentTable.append(row)
 

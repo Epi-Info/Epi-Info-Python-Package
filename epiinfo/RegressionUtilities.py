@@ -328,7 +328,7 @@ class EIMatrix:
         IthLikelihood += lDblAParamSum[i] * float(ldblB[i])
       contrast = True
       if cases == count or cases == 0:
-        contrast = No
+        contrast = False
       if contrast == True:
         conditional += IthLikelihood - math.log(lDblT0)
         for i in range(0, len(ldblB)):
