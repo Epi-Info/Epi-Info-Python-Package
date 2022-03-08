@@ -930,6 +930,10 @@ class LogisticRegression:
       self.logisticResults.Z.append(B / self.logisticResults.SE[i])
       self.logisticResults.PZ.append(2.0 * self.pFromZ(abs(self.logisticResults.Z[i])))
       i += 1
+    if self.logisticResults.Variables[-1] == 'CONSTANT':
+      del self.logisticResults.OR[-1]
+      del self.logisticResults.ORLCL[-1]
+      del self.logisticResults.ORUCL[-1]
 
     self.logisticResults.Score = self.mMatrixLikelihood.get_mdblScore()
     self.logisticResults.ScoreDF = len(self.mMatrixLikelihood.get_mdblaB())
