@@ -34,6 +34,9 @@ class LogisticRegression:
     self.currentTable = None
     self.lStrAVarNames = None
 
+    self.TableForInteractionTerms = []
+    self.InteractionTerms = []
+
     self.logisticResults = LogisticRegressionResults()
 
     self.mMatrixLikelihood = EIMatrix()
@@ -562,6 +565,32 @@ class LogisticRegression:
         cd['compare'] = None
       self.ColumnsAndValues[col] = cd
       colindex += 1
+    for col in independentVariables:
+      if '*' in col:
+        colcols = col.split('*')
+        for colcol in colcols:
+          if colcol not in self.ColumnsAndValues:
+            self.InteractionTerms.append(colcol)
+            cd = {'number' : -1}
+            uniquevalues = []
+            mctindex = 0
+            for datarow in mutableCurrentTable:
+              if len(self.InteractionTerms) == 1: # Added PYDATE 20220309
+                self.TableForInteractionTerms.append([]) # Added PYDATE 20220309
+              self.TableForInteractionTerms[mctindex].append(datarow[colcol]) # Added PYDATE 20220309
+              mctindex += 1 # Added PYDATE 20220309
+              if len(uniquevalues) > 2:
+                continue # PYDATE 20220309: changed break to continue
+              if datarow[colcol] not in uniquevalues:
+                uniquevalues.append(datarow[colcol])
+            if len(uniquevalues) == 2:
+              uniquevalues.sort()
+              cd['ref'] = uniquevalues[0]
+              cd['compare'] = uniquevalues[1]
+            else:
+              cd['ref'] = None
+              cd['compare'] = None
+            self.ColumnsAndValues[colcol] = cd
 
     return True
 
@@ -810,6 +839,54 @@ class LogisticRegression:
     iorOut.append([lastVar1 + '*' + lastVar2, lastVar1 + ' at ' + lastVar2 + ' = ' + str(ref2), math.exp(est), math.exp(lcl), math.exp(ucl)])
     return iorOut
 
+  def IORNotMainEffects(self, lastVar1, lastVar2, cm, bLabels, B, DataArray):
+    """ Computes odds ratios and CIs for interaction
+        terms holding one value fixed.
+        Parameters:
+          lastVar1 (str): the first interaction term
+          lastVar2 (str): the second interaction term
+          cm (list of lists)
+          bLabels (list)
+          B (list)
+          DataArray (list of lists)
+        Returns: list
+    """
+    iorOut = []
+    Z = self.zFromP(0.025)
+    print('lastVar1:', lastVar1)
+    print('lastVar2:', lastVar2)
+    print('cm:', cm)
+    print('bLabels:', bLabels)
+    print('B:', B)
+    print('DataArray[:4]:', DataArray[:4])
+    print(self.ColumnsAndValues)
+    print(self.InteractionTerms)
+    print(self.TableForInteractionTerms[:8])
+    oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
+    twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
+    if lastVar1 not in bLabels and lastVar2 not in bLabels:
+      print('neither term is a main effect')
+      if oneIsDummy and twoIsDummy:
+        print('both are dummies')
+      elif oneIsDummy:
+        print('first is dummy')
+      elif twoIsDummy:
+        print('second are dummy')
+      else:
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref2 = self.getColumnMean(self.InteractionTerms.index(lastVar2), self.TableForInteractionTerms)
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut = [lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL]
+    elif lastVar1 not in bLabels:
+      print('first term is not a main effect')
+    elif lastVar2 not in bLabels:
+      print('second term is not a main effect')
+    return iorOut
+
   def IOR(self, cm, bLabels, B, DataArray):
     """ Computes odds ratios and CIs for interaction
         terms holding one value fixed.
@@ -847,7 +924,7 @@ class LogisticRegression:
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
     if lastVar1 not in bLabels or lastVar2 not in bLabels:
-      return []
+      return self.IORNotMainEffects(lastVar1, lastVar2, cm, bLabels, B, DataArray)
     oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
     twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
     if oneIsDummy and twoIsDummy:
