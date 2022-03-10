@@ -504,16 +504,23 @@ class LogisticRegression:
     addtoindexofcolumn1 = 1
     if self.mstrMatchVar is not None and len(str(self.mstrMatchVar)) > 0:
       addtoindexofcolumn1 = 2
+    allOfTheInteractingTerms = [] # Added PYDATE 20220309
+    allOfTheInteractingTermsDataTable = [] # Added PYDATE 20220309
     for itmi in interactionTableMutable:
       itr = []
+      aotitdtr = []
       for eili in expandedInteractionsList:
         datum = 1.0
         eilil = eili.split('*')
         for eilili in eilil:
           indexofcolumn = interactionCovariatesWithoutRefs.index(eilili) + addtoindexofcolumn1
           datum *= float(itmi[indexofcolumn])
+          if len(allOfTheInteractingTermsDataTable) == 0:
+            allOfTheInteractingTerms.append(eilili) # Added PYDATE 20220309
+          aotitdtr.append(itmi[indexofcolumn]) # Added PYDATE 20220309
         itr.append(datum)
       interactedTable.append(itr + [1])
+      allOfTheInteractingTermsDataTable.append(aotitdtr) # Added PYDATE 20220309
     interactedColumns = []
     for eili in expandedInteractionsList:
       eilil = eili.split('*')
@@ -570,19 +577,23 @@ class LogisticRegression:
         colcols = col.split('*')
         for colcol in colcols:
           if colcol not in self.ColumnsAndValues:
-            self.InteractionTerms.append(colcol)
+            # self.InteractionTerms.append(colcol) # Added PYDATE 20220309
             cd = {'number' : -1}
             uniquevalues = []
-            mctindex = 0
+            mctindex = 0 # Added PYDATE 20220310
             for datarow in mutableCurrentTable:
-              if len(self.InteractionTerms) == 1: # Added PYDATE 20220309
-                self.TableForInteractionTerms.append([]) # Added PYDATE 20220309
-              self.TableForInteractionTerms[mctindex].append(datarow[colcol]) # Added PYDATE 20220309
-              mctindex += 1 # Added PYDATE 20220309
+              # if len(self.InteractionTerms) == 1: # Added PYDATE 20220309
+              #   self.TableForInteractionTerms.append([]) # Added PYDATE 20220309
+              # self.TableForInteractionTerms[mctindex].append(datarow[colcol]) # Added PYDATE 20220309
+              # mctindex += 1 # Added PYDATE 20220309
               if len(uniquevalues) > 2:
-                continue # PYDATE 20220309: changed break to continue
-              if datarow[colcol] not in uniquevalues:
-                uniquevalues.append(datarow[colcol])
+                break
+              #   continue # PYDATE 20220309: changed break to continue
+              # if datarow[colcol] not in uniquevalues: # Commented out PYDATE 20220310
+              if allOfTheInteractingTermsDataTable[mctindex][allOfTheInteractingTerms.index(colcol)] not in uniquevalues: # Added PYDATE 20220310
+                # uniquevalues.append(datarow[colcol]) # Commented out PYDATE 20220310
+                uniquevalues.append(allOfTheInteractingTermsDataTable[mctindex][allOfTheInteractingTerms.index(colcol)]) # Added PYDATE 20220310
+              mctindex += 1 # Added PYDATE 20220310
             if len(uniquevalues) == 2:
               uniquevalues.sort()
               cd['ref'] = uniquevalues[0]
@@ -591,6 +602,9 @@ class LogisticRegression:
               cd['ref'] = None
               cd['compare'] = None
             self.ColumnsAndValues[colcol] = cd
+
+    self.InteractionTerms = allOfTheInteractingTerms # Added PYDATE 20220309
+    self.TableForInteractionTerms = allOfTheInteractingTermsDataTable # Added PYDATE 20220309
 
     return True
 
@@ -853,25 +867,38 @@ class LogisticRegression:
     """
     iorOut = []
     Z = self.zFromP(0.025)
-    print('lastVar1:', lastVar1)
-    print('lastVar2:', lastVar2)
-    print('cm:', cm)
-    print('bLabels:', bLabels)
-    print('B:', B)
-    print('DataArray[:4]:', DataArray[:4])
-    print(self.ColumnsAndValues)
-    print(self.InteractionTerms)
-    print(self.TableForInteractionTerms[:8])
     oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
     twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
     if lastVar1 not in bLabels and lastVar2 not in bLabels:
-      print('neither term is a main effect')
       if oneIsDummy and twoIsDummy:
         print('both are dummies')
       elif oneIsDummy:
-        print('first is dummy')
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref2 = self.getColumnMean(self.InteractionTerms.index(lastVar2), self.TableForInteractionTerms)
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
       elif twoIsDummy:
-        print('second are dummy')
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        iOR = math.exp(beta * ref1)
+        iLCL = math.exp((beta - Z * iSE) * ref1)
+        iUCL = math.exp((beta + Z * iSE) * ref1)
+        iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref1), iOR, iLCL, iUCL])
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL])
       else:
         iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
         beta = B[iNumber]
@@ -880,7 +907,7 @@ class LogisticRegression:
         iOR = math.exp(beta * ref2)
         iLCL = math.exp((beta - Z * iSE) * ref2)
         iUCL = math.exp((beta + Z * iSE) * ref2)
-        iorOut = [lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL]
+        iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL])
     elif lastVar1 not in bLabels:
       print('first term is not a main effect')
     elif lastVar2 not in bLabels:
