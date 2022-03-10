@@ -871,7 +871,27 @@ class LogisticRegression:
     twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
     if lastVar1 not in bLabels and lastVar2 not in bLabels:
       if oneIsDummy and twoIsDummy:
-        print('both are dummies')
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        iOR = math.exp(beta * ref1)
+        iLCL = math.exp((beta - Z * iSE) * ref1)
+        iUCL = math.exp((beta + Z * iSE) * ref1)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref1), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
       elif oneIsDummy:
         iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
         beta = B[iNumber]
