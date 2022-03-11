@@ -931,7 +931,34 @@ class LogisticRegression:
     elif lastVar1 not in bLabels:
       print('first term is not a main effect')
     elif lastVar2 not in bLabels:
-      print('second term is not a main effect')
+      if oneIsDummy and twoIsDummy:
+        iNumber = self.ColumnsAndValues[lastVar1]['number']
+        iNumber2 = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        beta2 = beta + B[iNumber2]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        iSE2 = self.mMatrixLikelihood.get_mdblaInv()[iNumber2][iNumber2] ** 0.5
+        variance = cm[iNumber][iNumber] + cm[iNumber2][iNumber2] + 2 * cm[iNumber][iNumber2]
+        iSEt = 0.5 * iSE + 0.5 * iSE2
+        iSEt = variance ** 0.5
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        iOR = math.exp(beta)
+        iLCL = math.exp((beta - Z * iSE))
+        iUCL = math.exp((beta + Z * iSE))
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref1), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        iOR = math.exp(beta2 * ref2)
+        iLCL = math.exp((beta2 - Z * iSEt) * ref2)
+        iUCL = math.exp((beta2 + Z * iSEt) * ref2)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
     return iorOut
 
   def IOR(self, cm, bLabels, B, DataArray):
