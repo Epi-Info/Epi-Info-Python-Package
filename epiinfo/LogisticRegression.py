@@ -976,6 +976,36 @@ class LogisticRegression:
                        iOR, \
                        iLCL, \
                        iUCL])
+      elif twoIsDummy:
+        iNumber = self.ColumnsAndValues[lastVar1]['number']
+        iNumber2 = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        beta2 = B[iNumber2]
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        beta3 = beta + B[iNumber2] * ref2
+        variance = cm[iNumber][iNumber]
+        iSEt = variance ** 0.5
+        iOR = math.exp(beta)
+        iLCL = math.exp(beta - Z * iSEt)
+        iUCL = math.exp(beta + Z * iSEt)
+        iorOut.append([lastVar1, \
+                       'At ' + lastVar2 + ' = ' + str(ref1), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+        variance = cm[iNumber][iNumber] +\
+                   ref2 ** 2.0 * cm[iNumber2][iNumber2] +\
+                   2 * ref2 * cm[iNumber][iNumber2]
+        iSEt = variance ** 0.5
+        iOR = math.exp(beta3)
+        iLCL = math.exp(beta3 - Z * iSEt)
+        iUCL = math.exp(beta3 + Z * iSEt)
+        iorOut.append([lastVar1, \
+                       'At ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
     return iorOut
 
   def IOR(self, cm, bLabels, B, DataArray):
