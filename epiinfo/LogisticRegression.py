@@ -506,6 +506,10 @@ class LogisticRegression:
       addtoindexofcolumn1 = 2
     allOfTheInteractingTerms = [] # Added PYDATE 20220309
     allOfTheInteractingTermsDataTable = [] # Added PYDATE 20220309
+    newInteractionCovariatesWithoutRefs = []
+    for covariateFromAllCovariates in allCovariates:
+      if covariateFromAllCovariates in interactionCovariatesWithoutRefs:
+        newInteractionCovariatesWithoutRefs.append(covariateFromAllCovariates)
     for itmi in interactionTableMutable:
       itr = []
       aotitdtr = []
@@ -590,9 +594,9 @@ class LogisticRegression:
                 break
               #   continue # PYDATE 20220309: changed break to continue
               # if datarow[colcol] not in uniquevalues: # Commented out PYDATE 20220310
-              if allOfTheInteractingTermsDataTable[mctindex][allOfTheInteractingTerms.index(colcol)] not in uniquevalues: # Added PYDATE 20220310
+              if allOfTheInteractingTermsDataTable[mctindex][newInteractionCovariatesWithoutRefs.index(colcol)] not in uniquevalues: # Added PYDATE 20220310
                 # uniquevalues.append(datarow[colcol]) # Commented out PYDATE 20220310
-                uniquevalues.append(allOfTheInteractingTermsDataTable[mctindex][allOfTheInteractingTerms.index(colcol)]) # Added PYDATE 20220310
+                uniquevalues.append(allOfTheInteractingTermsDataTable[mctindex][newInteractionCovariatesWithoutRefs.index(colcol)]) # Added PYDATE 20220310
               mctindex += 1 # Added PYDATE 20220310
             if len(uniquevalues) == 2:
               uniquevalues.sort()
@@ -929,7 +933,68 @@ class LogisticRegression:
         iUCL = math.exp((beta + Z * iSE) * ref2)
         iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL])
     elif lastVar1 not in bLabels:
-      print('first term is not a main effect')
+      if oneIsDummy and twoIsDummy:
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        iOR = math.exp(beta * ref1)
+        iLCL = math.exp((beta - Z * iSE) * ref1)
+        iUCL = math.exp((beta + Z * iSE) * ref1)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref1), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+      elif oneIsDummy:
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref2 = self.getColumnMean(self.InteractionTerms.index(lastVar1), self.TableForInteractionTerms)
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, \
+                       str(self.ColumnsAndValues[lastVar1]['compare']) + ' vs ' + str(self.ColumnsAndValues[lastVar1]['ref']) + ' at ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+      elif twoIsDummy:
+        iNumber = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber][iNumber] ** 0.5
+        ref1 = self.ColumnsAndValues[lastVar2]['ref']
+        iOR = math.exp(beta * ref1)
+        iLCL = math.exp((beta - Z * iSE) * ref1)
+        iUCL = math.exp((beta + Z * iSE) * ref1)
+        iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref1), iOR, iLCL, iUCL])
+        ref2 = self.ColumnsAndValues[lastVar2]['compare']
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, 'At ' + lastVar2 + ' = ' + str(ref2), iOR, iLCL, iUCL])
+      else:
+        iNumber2 = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber2]
+        iSE = self.mMatrixLikelihood.get_mdblaInv()[iNumber2][iNumber2] ** 0.5
+        ref2 = self.getColumnMean(self.InteractionTerms.index(lastVar1), self.TableForInteractionTerms)
+        iOR = math.exp(beta * ref2)
+        iLCL = math.exp((beta - Z * iSE) * ref2)
+        iUCL = math.exp((beta + Z * iSE) * ref2)
+        iorOut.append([lastVar1, \
+                       'At ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
     elif lastVar2 not in bLabels:
       if oneIsDummy and twoIsDummy:
         iNumber = self.ColumnsAndValues[lastVar1]['number']
@@ -994,6 +1059,25 @@ class LogisticRegression:
                        iOR, \
                        iLCL, \
                        iUCL])
+        variance = cm[iNumber][iNumber] +\
+                   ref2 ** 2.0 * cm[iNumber2][iNumber2] +\
+                   2 * ref2 * cm[iNumber][iNumber2]
+        iSEt = variance ** 0.5
+        iOR = math.exp(beta3)
+        iLCL = math.exp(beta3 - Z * iSEt)
+        iUCL = math.exp(beta3 + Z * iSEt)
+        iorOut.append([lastVar1, \
+                       'At ' + lastVar2 + ' = ' + str(ref2), \
+                       iOR, \
+                       iLCL, \
+                       iUCL])
+      else:
+        iNumber = self.ColumnsAndValues[lastVar1]['number']
+        iNumber2 = self.ColumnsAndValues[lastVar1 + '*' + lastVar2]['number']
+        beta = B[iNumber]
+        beta2 = B[iNumber2]
+        ref2 = self.getColumnMean(self.InteractionTerms.index(lastVar2), self.TableForInteractionTerms)
+        beta3 = beta + B[iNumber2] * ref2
         variance = cm[iNumber][iNumber] +\
                    ref2 ** 2.0 * cm[iNumber2][iNumber2] +\
                    2 * ref2 * cm[iNumber][iNumber2]
