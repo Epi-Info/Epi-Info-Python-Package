@@ -3,16 +3,16 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '0.1.0'
+VERSION = '1.0.0'
 PACKAGE_NAME = 'epiinfo'
-AUTHOR = 'John Copeland (ported code to Pyton)'
+AUTHOR = 'John Copeland (ported code to Pyton and added interaction odds ratios)'
 AUTHOR_EMAIL = 'zfj4@cdc.gov'
 URL = 'https://github.com/Epi-Info/Epi-Info-Python-Package'
 
 LICENSE = 'Apache License 2.0'
-DESCRIPTION = 'Epi Info'
+DESCRIPTION = 'Epi Info: Import and analyze data'
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
-LONG_DESC_TYPE = "text/markdown"
+LONG_DESC_TYPE = "Imports data from different formats, including Epi Info sync files, and performs Epi Info statistical analyses."
 
 INSTALL_REQUIRES = [
       'scipy',

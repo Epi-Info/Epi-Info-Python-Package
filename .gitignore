@@ -30,3 +30,5 @@ build/lib/epiinfo/EncryptionDecryptionKeys.py
 build/lib/epiinfo/LogisticRegression.py
 
 build/lib/epiinfo/RegressionUtilities.py
+
+dist/epiinfo-1.0.0.tar.gz
