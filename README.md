@@ -32,7 +32,7 @@ ivdict = {'Ill' : 'dependvar'} #, 'intercept' : True , 'includemissing' : False}
 ivdict['exposureVariables'] = ['column0', 'column1', column2, 'column0*column1']
 # ivdict['Group'] = 'matchgroupcolumn' # optional for matched case control studies
 reg = LogisticRegression()
-rslts = reg.doLogistic(ivdict, dataset)
+rslts = reg.doRegression(ivdict, dataset)
 print(rslts.Variables)
 print(rslts.Beta)
 print(rslts.SE)
