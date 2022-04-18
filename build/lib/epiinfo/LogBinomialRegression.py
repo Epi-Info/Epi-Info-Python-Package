@@ -5,7 +5,7 @@ import itertools
 from .randata import randata
 from .RegressionUtilities import *
 
-class LogisticRegression:
+class LogBinomialRegression:
   def __init__(self):
     self.mstrC = None
     self.mdblC = None
@@ -1183,7 +1183,7 @@ class LogisticRegression:
       self.mMatrixLikelihood.set_matchGroupValues(len(groupValues))
     else:
       self.mMatrixLikelihood.set_mstrMatchVar("")
-    self.mMatrixLikelihood.MaximizeLikelihood(
+    self.mMatrixLikelihood.MaximizeLikelihoodLB(
                            self.NumRows,
                            self.NumColumns,
                            self.currentTable,
