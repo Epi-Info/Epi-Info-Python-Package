@@ -155,12 +155,102 @@ class EIMatrix:
   def fabs(self, a):
     """ Computes and returns absolute value
         Parameters:
-          a (int of float))
+          a (int or float)
         Returns: Absolute value of a
     """
     if a < 0:
       return -a
     return a
+
+  def trans(self, aRows, aCols, a, b):
+    """ Transforms a matrix
+        Parameters:
+          aRows (int)
+          aCols (int)
+          a (list)
+          b (list)
+        Returns: none
+    """
+    for i in range(aRows):
+      for j in range(aCols):
+        b[j][i] = a[i][j]
+
+  def mul(self, rowA, colA, rowB, colB, a, b, c):
+    """ Populates one matrix from two others
+        Parameters:
+          aRows (int)
+          aCols (int)
+          a (list)
+          b (list)
+        Returns: none
+    """
+    if colA != rowB:
+      return
+    for i in range(rowA):
+      for k in range(colB):
+        c[i][k] = 0
+        for j in range(colA):
+          c[i][k] += a[i][j] * b[j][k]
+
+  def ludcmpforlinear(self, n, d, a, indx):
+    """ Performs calculations and stores the results in a list.
+        Parameters:
+          n (int)
+          d (float)
+          a (list of lists)
+          indx (list)
+        Returns: none
+    """
+    TINY = 1.0e-20
+    imax = 0
+    dum = 0.0
+    big = 0.0
+    sum = 0.0
+    vv = []
+
+    d = 1.0
+    for i in range(0, n):
+      big = 0.0
+      for j in range(0, n):
+        absaij = self.fabs(float(a[i][j]))
+        if absaij > big:
+          big = absaij
+      if big == 0.0:
+        return
+      vv.append(1.0 / big)
+    for j in range(0, n):
+      for i in range(0, j):
+        sum = float(a[i][j])
+        for k in range(0, i):
+          sum -= float(a[i][k]) * float(a[k][j])
+        a[i][j] = sum
+      big = 0.0
+      for i in range(j, n):
+        sum = float(a[i][j])
+        for k in range(0, j):
+          sum -= float(a[i][k]) * float(a[k][j])
+        a[i][j] = sum
+        dum = vv[i] * self.fabs(sum)
+        if dum >= big:
+          big = dum
+          imax = i
+      if j != imax:
+        for k in range(0, n):
+          dum = float(a[imax][k])
+          a[imax][k] = float(a[j][k])
+          a[j][k] = dum
+        d = -1 * d
+        vv[imax] = vv[j]
+      indx[j] = imax + 1
+      if float(a[i][j]) == 0.0:
+        a[j][j] = TINY
+      if j != n:
+        dum = 1.0 / float(a[j][j])
+        for i in range(j + 1, n):
+          oldValue = float(a[i][j])
+          newValue = oldValue * dum
+          a[i][j] = newValue
+    return
 
   def ludcmp(self, a, n, indx, d):
     """ Performs calculations and stores the results in a list.
@@ -510,6 +600,145 @@ class EIMatrix:
     else:
       likelihood[0] = self.UnConditional(lintOffset, ldblA, ldblaJacobian, ldblB, ldblaF, nRows)
 
+  def doLinear(self, currentTable):
+    """ Computes the starting betas for log-binomial regression
+        Uses weighted log linear regression.
+        Parameters:
+          ldblA (list)
+        Returns: list
+    """
+    results = []
+    lintWRows = 0
+    lintweight = 1
+    lintrowCount = 0
+    ldblMagic = 0.0
+    NumRows = len(currentTable)
+    NumColumns = len(currentTable[0])
+    for i in range(NumRows):
+      lintWRows += 1
+      if lintweight == 1:
+        lintrowCount += currentTable[i][1]
+      else:
+        lintrowCount = lintWRows
+    y = []
+    x = []
+    xx = []
+    invxx = []
+    xy = []
+    tx = []
+    B = []
+    yhat = []
+    resid = []
+    sse = 0.0
+    mse = 0.0
+    rmse = 0
+    indx = []
+    d = 0.0
+    fvalue = []
+    covb = []
+    probf = []
+    stdb = []
+    for i in range(NumColumns - 1 - lintweight):
+      fvalue.append(None)
+      probf.append(None)
+      stdb.append(None)
+      xy.append([None])
+      B.append([None])
+      indx.append(None)
+      covbrow = []
+      xxrow = []
+      invxxrow = []
+      for j in range(NumColumns - 1 - lintweight):
+        covbrow.append(None)
+        xxrow.append(None)
+        invxxrow.append(None)
+      covb.append(covbrow)
+      xx.append(xxrow)
+      invxx.append(invxxrow)
+      txrow = []
+      for j in range(NumRows):
+        txrow.append(None)
+      tx.append(txrow)
+    for i in range(NumRows):
+      y.append([None])
+      yhat.append([None])
+      resid.append(None)
+      xrow = []
+      for j in range(NumColumns - 1 - lintweight):
+        xrow.append(None)
+      x.append(xrow)
+    coeff = []
+    for i in range(4):
+      coeffrow = []
+      for j in range(NumColumns - 1 - lintweight):
+        coeffrow.append(None)
+      coeff.append(coeffrow)
+    coeff[0][0] = 0.0
+    meanY = 0.0
+    ra2 = 0.0
+    r2 = 0.0
+    ssy = 0.0
+    ftest = 0.0
+    p = 0
+    k = 0
+    for i in range(NumRows):
+      if lintweight == 1:
+        y[k][0] = float(currentTable[i][0]) * float(currentTable[i][1]) ** 0.5
+        for j in range(1 + lintweight, NumColumns):
+          x[k][j - 1 - lintweight] = float(currentTable[i][j]) * float(currentTable[i][1]) ** 0.5
+        k += 1
+      else:
+        # Unnecessary because only weighted analysis is called here
+        k += 1
+    mboolFirst = True
+    mboolIntercept = True
+    self.trans(NumRows, NumColumns - 1 - lintweight, x, tx)
+    self.mul(NumColumns - 1 - lintweight, NumRows, NumRows, NumColumns - 1 - lintweight, tx, x, xx)
+    self.mul(NumColumns - 1 - lintweight, NumRows, NumRows, 1, tx, y, xy)
+    for e in range(NumColumns - 1 - lintweight):
+      for c in range(NumColumns - 1 - lintweight):
+        invxx[e][c] = xx[e][c]
+    self.ludcmpforlinear(NumColumns - 1 - lintweight, d, invxx, indx)
+    d = 1
+    for i in range(NumColumns - 1 - lintweight):
+      d *= invxx[i][i]
+      if d == 0:
+        print('Colinear Data; using log(p) as start value')
+        return B
+    if self.fabs(d) < 0.000001:
+      print('Linear matrix tolerance exceeded; using log(p) as start value')
+      return B
+    self.inv(xx, invxx)
+    self.mul(NumColumns - 1 - lintweight, NumColumns - 1 - lintweight, NumColumns - 1 - lintweight, 1, invxx, xy, B)
+    return B
+
+  def GetStartValues(self, ldblA):
+    """ Computes the starting betas for log-binomial regression
+        Uses weighted log linear regression.
+        Parameters:
+          ldblA (list)
+        Returns: list
+    """
+    startvalues = []
+    datamatrix = []
+    for r in ldblA:
+      dmr = [0]
+      for dmrc in r:
+        dmr.append(dmrc)
+      y = 0.9 * dmr[1] + 0.1 * (1 - dmr[1])
+      dmr[0] = math.log(y)
+      dmr[1] = (y / (1 - y))
+      datamatrix.append(dmr)
+    regresults = self.doLinear(datamatrix)
+    for rr in regresults:
+      if type(rr) is list:
+        startvalues.append(rr[0])
+      elif type(rr) is float:
+        startvalues.append(rr)
+      else:
+        startvalues.append(0.0)
+    return startvalues
+
   def CalcLikelihoodLB(self, lintOffset, ldblA, ldblB, ldblaJacobian, ldblaF, nRows, likelihood, strError, booStartAtZero):
     """ Computes likelihood and stores the result as a float in a list
         Parameters:
@@ -545,6 +774,10 @@ class EIMatrix:
           ldblB[len(ldblB) - 1] = 0.0
         else:
           ldblB[len(ldblB) - 1] = math.log(ncases / nrecs)
+          startvalues = self.GetStartValues(ldblA)
+          if startvalues[len(startvalues) - 1] is not None:
+            for stv in range(len(startvalues)):
+              ldblB[stv] = startvalues[stv]
       elif ncases == 0.0:
         strError[0] = "Dependent variable contains no cases."
         return
