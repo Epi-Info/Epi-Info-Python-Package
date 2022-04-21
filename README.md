@@ -50,6 +50,28 @@ for ior in rslts.InteractionOR:
     print(ior)
 ```
 'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
+#### LogBinomialRegression
+Contains functions for Log-Binomial Regression analysis.<br>
+```
+from epiinfo.LogBinomialRegression import *
+ivdict = {'Ill' : 'dependvar'} #, 'intercept' : True , 'includemissing' : False} # intercept and includemissing are optional keys
+ivdict['exposureVariables'] = ['column0', 'column1', column2, 'column0*column1']
+reg = LogBinomialRegression()
+rslts = reg.doRegression(ivdict, dataset)
+print(rslts.Variables)
+print(rslts.Beta)
+print(rslts.SE)
+print(rslts.RR)
+print(rslts.RRLCL)
+print(rslts.RRUCL)
+print(rslts.Z)
+print(rslts.PZ)
+print(rslts.Iterations)
+print(rslts.LogLikelihood)
+print(rslts.CasesIncluded)
+for ior in rslts.InteractionRR:
+    print(ior)
+```
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
 ```
