@@ -1104,6 +1104,9 @@ class LogisticRegressionResults:
     self.OR = []
     self.ORLCL = []
     self.ORUCL = []
+    self.RR = []
+    self.RRLCL = []
+    self.RRUCL = []
     self.Z = []
     self.PZ = []
     self.Score = None
@@ -1112,10 +1115,12 @@ class LogisticRegressionResults:
     self.LikelihoodRatio = None
     self.LikelihoodRatioDF = None
     self.LikelihoodRatioP = None
+    self.LogLikelihood = None
     self.MinusTwoLogLikelihood = None
     self.Iterations = None
     self.CasesIncluded = None
     self.InteractionOR = None
+    self.InteractionRR = None
 
   def get_Rows(self):
     return self._Rows

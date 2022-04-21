@@ -1197,7 +1197,7 @@ class LogBinomialRegression:
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
-    self.logisticResults.InteractionOR = self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB(), self.currentTable)
+    self.logisticResults.InteractionRR = self.IOR(self.mMatrixLikelihood.get_mdblaInv(), self.logisticResults.Variables, self.mMatrixLikelihood.get_mdblaB(), self.currentTable)
     if self.mboolIntercept == False or (self.mstrGroupVar is not None and len(self.mstrGroupVar) > 0):
       del self.logisticResults.Variables[-1]
     mdblP = self.zFromP(0.025)
@@ -1205,17 +1205,17 @@ class LogBinomialRegression:
     for B in self.mMatrixLikelihood.get_mdblaB():
       self.logisticResults.Beta.append(B)
       self.logisticResults.SE.append(self.mMatrixLikelihood.get_mdblaInv()[i][i] ** 0.5)
-      self.logisticResults.OR.append(math.exp(B))
+      self.logisticResults.RR.append(math.exp(B))
       moe = mdblP * self.logisticResults.SE[i]
-      self.logisticResults.ORLCL.append(math.exp(B - moe))
-      self.logisticResults.ORUCL.append(math.exp(B + moe))
+      self.logisticResults.RRLCL.append(math.exp(B - moe))
+      self.logisticResults.RRUCL.append(math.exp(B + moe))
       self.logisticResults.Z.append(B / self.logisticResults.SE[i])
       self.logisticResults.PZ.append(2.0 * self.pFromZ(abs(self.logisticResults.Z[i])))
       i += 1
     if self.logisticResults.Variables[-1] == 'CONSTANT':
-      del self.logisticResults.OR[-1]
-      del self.logisticResults.ORLCL[-1]
-      del self.logisticResults.ORUCL[-1]
+      del self.logisticResults.RR[-1]
+      del self.logisticResults.RRLCL[-1]
+      del self.logisticResults.RRUCL[-1]
 
     self.logisticResults.Score = self.mMatrixLikelihood.get_mdblScore()
     self.logisticResults.ScoreDF = len(self.mMatrixLikelihood.get_mdblaB())
@@ -1225,7 +1225,7 @@ class LogBinomialRegression:
     self.logisticResults.LikelihoodRatio = 2.0 * (self.mMatrixLikelihood.get_mdbllllast()[0] - self.mMatrixLikelihood.get_mdblllfst()[0])
     self.logisticResults.LikelihoodRatioDF = self.logisticResults.ScoreDF
     self.logisticResults.LikelihoodRatioP = self.PValFromChiSq(self.logisticResults.LikelihoodRatio, self.logisticResults.LikelihoodRatioDF)
-    self.logisticResults.MinusTwoLogLikelihood = -2.0 * self.mMatrixLikelihood.get_mdbllllast()[0]
+    self.logisticResults.LogLikelihood = self.mMatrixLikelihood.get_mdbllllast()[0]
     self.logisticResults.Iterations = self.mMatrixLikelihood.get_mintIterations()
     self.logisticResults.CasesIncluded = self.NumRows
 
