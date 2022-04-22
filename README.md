@@ -56,6 +56,7 @@ Contains functions for Log-Binomial Regression analysis.<br>
 from epiinfo.LogBinomialRegression import *
 ivdict = {'Ill' : 'dependvar'} #, 'intercept' : True , 'includemissing' : False} # intercept and includemissing are optional keys
 ivdict['exposureVariables'] = ['column0', 'column1', column2, 'column0*column1']
+#ivl['StartValues'] = [0.0, 0.0, 0.0, 0.0, -0.45] # Optional user-supplied starting beta values
 reg = LogBinomialRegression()
 rslts = reg.doRegression(ivdict, dataset)
 print(rslts.Variables)
