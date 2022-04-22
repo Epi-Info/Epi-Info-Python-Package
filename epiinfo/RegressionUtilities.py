@@ -862,6 +862,7 @@ class EIMatrix:
     if self.fabs(ldblDet) < ldblToler:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+      self.set_lstrError(strCalcLikelihoodError)
       print("Matrix Tolerance Exceeded")
       return
 
@@ -931,6 +932,7 @@ class EIMatrix:
       if self.fabs(ldblDet) < ldblToler:
         self.set_mboolConverge(False)
         strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+        self.set_lstrError(strCalcLikelihoodError)
         print("Matrix Tolerance Exceeded")
         return
       for i in range(len(self.get_mdblaB())):
@@ -1010,6 +1012,7 @@ class EIMatrix:
     if self.fabs(ldblDet) < ldblToler:
       self.set_mboolConverge(False)
       strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+      self.set_lstrError(strCalcLikelihoodError)
       print("Matrix Tolerance Exceeded")
       return
 
@@ -1079,6 +1082,7 @@ class EIMatrix:
       if self.fabs(ldblDet) < ldblToler:
         self.set_mboolConverge(False)
         strCalcLikelihoodError[0] = "Matrix Tolerance Exceeded"
+        self.set_lstrError(strCalcLikelihoodError)
         print("Matrix Tolerance Exceeded")
         return
       for i in range(len(self.get_mdblaB())):

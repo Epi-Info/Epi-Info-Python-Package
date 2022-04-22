@@ -1194,6 +1194,9 @@ class LogBinomialRegression:
                            self.mdblConv,
                            False)
 
+    if len(self.mMatrixLikelihood.get_lstrError()) > 0 and self.mMatrixLikelihood.get_lstrError()[0] == "Matrix Tolerance Exceeded":
+      return self.logisticResults
+
     for ev in inputVariableList['exposureVariables']:
       self.logisticResults.Variables.append(ev)
     self.logisticResults.Variables.append('CONSTANT')
