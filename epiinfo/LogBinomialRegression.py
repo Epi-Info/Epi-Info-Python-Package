@@ -31,6 +31,8 @@ class LogBinomialRegression:
     self.NumColumns = None
     self.ColumnsAndValues = {}
 
+    self.StartValues = []
+
     self.currentTable = None
     self.lStrAVarNames = None
 
@@ -1169,6 +1171,8 @@ class LogBinomialRegression:
 
     self.mboolFirst = True
     self.mMatrixLikelihood = EIMatrix()
+    if 'StartValues' in inputVariableList:
+      self.mMatrixLikelihood.set_StartValues(inputVariableList['StartValues'])
     self.mMatrixLikelihood.set_mboolFirst(self.mboolFirst)
     self.mMatrixLikelihood.set_mboolIntercept(self.mboolIntercept)
     if self.mstrGroupVar is not None:
@@ -1195,6 +1199,8 @@ class LogBinomialRegression:
                            False)
 
     if len(self.mMatrixLikelihood.get_lstrError()) > 0 and self.mMatrixLikelihood.get_lstrError()[0] == "Matrix Tolerance Exceeded":
+      return self.logisticResults
+    if len(self.mMatrixLikelihood.get_lstrError()) > 0 and self.mMatrixLikelihood.get_lstrError()[0] == "Could not maximize likelihood. Try different starting values.":
       return self.logisticResults
 
     for ev in inputVariableList['exposureVariables']:

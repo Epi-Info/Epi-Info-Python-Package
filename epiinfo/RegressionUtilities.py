@@ -19,6 +19,7 @@ class EIMatrix:
     self._mdblScore = 0.0
     self._mintIterations = 0
     self._lstrError = [""]
+    self._startValues = []
 
   def get_mboolFirst(self):
     return self._mboolFirst
@@ -94,6 +95,11 @@ class EIMatrix:
     return self._lstrError
   def set_lstrError(self, v):
     self._lstrError = v
+
+  def get_StartValues(self):
+    return self._startValues
+  def set_StartValues(self, v):
+    self._startValues = v
 
   def setListItem(self, thelist, theitem, theindex):
     """ Sets and item at a specific list index; grows list if necessary
@@ -545,6 +551,9 @@ class EIMatrix:
             ldblaJacobian.append([None] * len(ldblB))
           newldblaJacobianjk = oldldblaJacobianjk + ((1 - ysubi) * x[k] * x[j] * (1 / (1 - ldblIthLikelihood) ** 2.0) * ldblIthLikelihood) * ldblweight
           ldblaJacobian[j][k] = newldblaJacobianjk
+      if ldblIthContribution <= 0.0:
+        self.set_lstrError(['Could not maximize likelihood. Try different starting values.'])
+        return 0.0
       unconditional = unconditional + math.log(ldblIthContribution) * ldblweight
     return unconditional
 
@@ -775,6 +784,10 @@ class EIMatrix:
         else:
           ldblB[len(ldblB) - 1] = math.log(ncases / nrecs)
           startvalues = self.GetStartValues(ldblA)
+          if len(self.get_StartValues()) > 0:
+            startvalues = self.get_StartValues()
+            while len(startvalues) < len(ldblB):
+              startvalues.insert(0, 0.0)
           if startvalues[len(startvalues) - 1] is not None:
             for stv in range(len(startvalues)):
               ldblB[stv] = startvalues[stv]
@@ -975,6 +988,10 @@ class EIMatrix:
 
     self.CalcLikelihoodLB(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows, ldbllfst, strCalcLikelihoodError, booStartAtZero)
 
+    if self.get_lstrError()[0] == 'Could not maximize likelihood. Try different starting values.':
+      print(self.get_lstrError()[0])
+      return
+
     for i in range(len(self.get_mdblaB())):
       forInv = []
       for j in range(len(self.get_mdblaB())):
@@ -1034,6 +1051,11 @@ class EIMatrix:
       for i in range(len(self.get_mdblaF())):
         self.get_mdblaF()[i] = 0.0
       self.CalcLikelihoodLB(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows, ldbll, strCalcLikelihoodError, booStartAtZero)
+
+      if self.get_lstrError()[0] == 'Could not maximize likelihood. Try different starting values.':
+        print(self.get_lstrError()[0])
+        return
+
       doThisStuff = True
       if ldbloldll - ldbll[0] > ldblConv:
         if ridge > 0.0 and ridge < 1000.0:
