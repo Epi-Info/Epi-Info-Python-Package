@@ -791,6 +791,7 @@ class EIMatrix:
           if startvalues[len(startvalues) - 1] is not None:
             for stv in range(len(startvalues)):
               ldblB[stv] = startvalues[stv]
+          print('Using Start Values:', ldblB)
       elif ncases == 0.0:
         strError[0] = "Dependent variable contains no cases."
         return
