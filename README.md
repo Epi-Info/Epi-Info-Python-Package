@@ -1,5 +1,7 @@
 ## Epi Info Data Imports and Analyses
 This package brings Epi Info statistical analysis routines to the Python environment. It has methods for converting datasets into Python objects and for passing those objects to analysis functions.
+#### Current version available in dist folder
+1.0.0
 ### Classes
 #### ImportData
 Contains functions for importing data sources to Python objects (lists of dictionaries) for consumption by analysis functions.<br><br>
