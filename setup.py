@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 
 VERSION = '1.0.0'
 PACKAGE_NAME = 'epiinfo'
-AUTHOR = 'John Copeland (ported code to Pyton and added interaction odds ratios)'
+AUTHOR = 'John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)'
 AUTHOR_EMAIL = 'zfj4@cdc.gov'
 URL = 'https://github.com/Epi-Info/Epi-Info-Python-Package'
 
