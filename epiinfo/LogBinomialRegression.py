@@ -1237,5 +1237,6 @@ class LogBinomialRegression:
     self.logisticResults.LogLikelihood = self.mMatrixLikelihood.get_mdbllllast()[0]
     self.logisticResults.Iterations = self.mMatrixLikelihood.get_mintIterations()
     self.logisticResults.CasesIncluded = self.NumRows
+    self.logisticResults.ParameterHistory = self.mMatrixLikelihood.get_ParameterHistory()
 
     return self.logisticResults

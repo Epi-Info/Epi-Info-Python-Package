@@ -20,6 +20,7 @@ class EIMatrix:
     self._mintIterations = 0
     self._lstrError = [""]
     self._startValues = []
+    self._parameterHistory = []
 
   def get_mboolFirst(self):
     return self._mboolFirst
@@ -100,6 +101,11 @@ class EIMatrix:
     return self._startValues
   def set_StartValues(self, v):
     self._startValues = v
+
+  def get_ParameterHistory(self):
+    return self._parameterHistory
+  def set_ParameterHistory(self, v):
+    self._parameterHistory = v
 
   def setListItem(self, thelist, theitem, theindex):
     """ Sets and item at a specific list index; grows list if necessary
@@ -516,6 +522,10 @@ class EIMatrix:
     ldblIthLikelihood = 0.0
     ldblIthContribution = 0.0
     ldblweight = 1.0
+    ldblweight = 1.0
+    self._parameterHistory.append([])
+    for beta in ldblB:
+      self._parameterHistory[len(self.get_ParameterHistory()) - 1].append(beta)
     for i in range(0, nRows):
       for j in range(0, len(ldblB)):
         x[j] = float(ldblaDataArray[i][j + lintOffset])
@@ -791,7 +801,6 @@ class EIMatrix:
           if startvalues[len(startvalues) - 1] is not None:
             for stv in range(len(startvalues)):
               ldblB[stv] = startvalues[stv]
-          print('Using Start Values:', ldblB)
       elif ncases == 0.0:
         strError[0] = "Dependent variable contains no cases."
         return
@@ -1053,7 +1062,7 @@ class EIMatrix:
         self.get_mdblaF()[i] = 0.0
       self.CalcLikelihoodLB(lintOffset, dataArray, self.get_mdblaB(), self.get_mdblaJacobian(), self.get_mdblaF(), nRows, ldbll, strCalcLikelihoodError, booStartAtZero)
 
-      if self.get_lstrError()[0] == 'Could not maximize likelihood. Try different starting values.':
+      if self.get_lstrError()[0] == 'Could not maximize likelihood. Try different starting values. See the epiinfo package README for further instructions.':
         print(self.get_lstrError()[0])
         return
 
@@ -1148,6 +1157,7 @@ class LogisticRegressionResults:
     self.CasesIncluded = None
     self.InteractionOR = None
     self.InteractionRR = None
+    self.ParameterHistory = None
 
   def get_Rows(self):
     return self._Rows
