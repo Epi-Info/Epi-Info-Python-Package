@@ -70,8 +70,12 @@ print(rslts.PZ)
 print(rslts.Iterations)
 print(rslts.LogLikelihood)
 print(rslts.CasesIncluded)
+# To see adjusted relative risks for interaction terms:
 for ior in rslts.InteractionRR:
     print(ior)
+# To see start values and subsequent beta parameter values in the iteration history.
+for ph in rslts.ParameterHistory:
+    print(ph)
 ```
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
