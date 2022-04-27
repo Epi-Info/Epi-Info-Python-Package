@@ -2,6 +2,9 @@
 This package brings Epi Info statistical analysis routines, plus a log-binomial analysis routine for computing adjusted relative risks of associations with binary outcome data, to the Python environment. It has methods for converting datasets into Python objects and for passing those objects to analysis functions.
 #### Current version available in dist folder
 1.0.0
+```
+pip install path/epiinfo-version-py3-none-any.whl
+```
 ### Classes
 #### ImportData
 Contains functions for importing data sources to Python objects (lists of dictionaries) for consumption by analysis functions.<br><br>
