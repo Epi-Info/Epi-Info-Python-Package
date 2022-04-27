@@ -3,7 +3,7 @@ This package brings Epi Info statistical analysis routines, plus a log-binomial 
 #### Current version available in dist folder
 1.0.0
 ```
-pip install path/epiinfo-version-py3-none-any.whl
+pip install path/epiinfo-1.0.0-py3-none-any.whl
 ```
 ### Classes
 #### ImportData
