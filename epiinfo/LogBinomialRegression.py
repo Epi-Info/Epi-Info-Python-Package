@@ -6,6 +6,16 @@ from .randata import randata
 from .RegressionUtilities import *
 
 class LogBinomialRegression:
+  """ The LogBinomialRegression class is a Log-Binomial Regression
+      class for performing Log Binomial Regression analysis to
+      compute adjusterd Risk Ratios.
+
+      It was developed by modifing the link, anti-link, score,
+      and likelihood functions in the Logistic Regression
+      routine.
+
+     Author: John Copeland
+  """
   def __init__(self):
     self.mstrC = None
     self.mdblC = None
