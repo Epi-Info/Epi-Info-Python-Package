@@ -55,7 +55,7 @@ for ior in rslts.InteractionOR:
 ```
 'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
 #### LogBinomialRegression
-Contains functions for Log-Binomial Regression analysis to provide adjusted relative risks when the independent variable is binary.<br>
+Contains functions for Log-Binomial Regression analysis to provide adjusted risk ratios when the independent variable is binary.<br>
 ```
 from epiinfo.LogBinomialRegression import *
 ivdict = {'Ill' : 'dependvar'} #, 'intercept' : True , 'includemissing' : False} # intercept and includemissing are optional keys
