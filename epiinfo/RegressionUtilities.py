@@ -1167,3 +1167,26 @@ class LogisticRegressionResults:
     return self._ErrorMessage
   def set_ErrorMessage(self, v):
     self._ErrorMessage = v
+
+  def show(self):
+    regType = 'LOGISTIC'
+    ratioType = 'Odds'
+    ratios = self.OR
+    ratiolls = self.ORLCL
+    ratiouls = self.ORUCL
+    likelihood = self.MinusTwoLogLikelihood
+    interactions = self.InteractionOR
+    if len(self.OR) == 0:
+      regType = 'LOG BINOMIAL'
+      ratioType = 'Risk'
+      ratios = self.RR
+      ratiolls = self.RRLCL
+      ratiouls = self.RRUCL
+      likelihood = self.LogLikelihood
+      interactions = self.InteractionRR
+    print(regType, 'REGRESSION RESULTS')
+    print('{:<32s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper'))
+    for i in range(len(self.Variables)):
+      if i < len(self.Variables) - 1:
+        print('{:<32s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),str(round(ratios[i], 4)),str(round(ratiolls[i], 4)),str(round(ratiouls[i], 4))))
+    print('{:<32s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4))))
