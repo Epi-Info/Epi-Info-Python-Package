@@ -36,3 +36,5 @@ build/lib/epiinfo/LogBinomialRegression.py
 build/lib/epiinfo/LogBinomialRegression.py
 
 dist/epiinfo-0.1.0-py3-none-any.whl
+
+dist/epiinfo-1.0.1.tar.gz
