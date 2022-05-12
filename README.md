@@ -54,6 +54,17 @@ for ior in rslts.InteractionOR:
     print(ior)
 ```
 'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
+```
+rslts.show()
+```
+```
+LOGISTIC REGRESSION RESULTS
+Variable          Coefficient    Standard Error    Odds Ratio        Lower           Upper      
+ChefSalad            1.145           0.3429          3.1424          1.6046          6.1539     
+EggSaladSandwich     1.0418          0.3146          2.8343           1.53           5.2506     
+CONSTANT            -0.7644          0.3602
+```
+Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
 #### LogBinomialRegression
 Contains functions for Log-Binomial Regression analysis to provide adjusted risk ratios when the independent variable is binary.<br>
 ```
@@ -81,6 +92,18 @@ for ior in rslts.InteractionRR:
 for ph in rslts.ParameterHistory:
     print(ph)
 ```
+'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
+```
+rslts.show()
+```
+```
+LOG BINOMIAL REGRESSION RESULTS
+Variable          Coefficient    Standard Error    Risk Ratio        Lower           Upper      
+ChefSalad            0.3355          0.1155          1.3986          1.1152          1.7541     
+EggSaladSandwich     0.2869          0.0863          1.3323          1.125           1.5777     
+CONSTANT            -0.8574          0.1275
+```
+Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
 ```
