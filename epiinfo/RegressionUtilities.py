@@ -1169,6 +1169,10 @@ class LogisticRegressionResults:
     self._ErrorMessage = v
 
   def show(self):
+    widthofcoeff = 16
+    for varname in self.Variables:
+      if len(varname) > widthofcoeff:
+        widthofcoeff = len(varname)
     regType = 'LOGISTIC'
     ratioType = 'Odds'
     ratios = self.OR
@@ -1185,8 +1189,10 @@ class LogisticRegressionResults:
       likelihood = self.LogLikelihood
       interactions = self.InteractionRR
     print(regType, 'REGRESSION RESULTS')
-    print('{:<32s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper'))
+    # Saving this next line to record this other way of accomplishing the formatting
+    # print('{0:<{6}s}{1:^16s}{2:^16s}{3:^16s}{4:^16s}{5:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper',widthofcoeff))
+    print('{:<{width}s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper',width=widthofcoeff))
     for i in range(len(self.Variables)):
       if i < len(self.Variables) - 1:
-        print('{:<32s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),str(round(ratios[i], 4)),str(round(ratiolls[i], 4)),str(round(ratiouls[i], 4))))
-    print('{:<32s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4))))
+        print('{:<{width}s}{:^16s}{:^16s}{:^16s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),str(round(ratios[i], 4)),str(round(ratiolls[i], 4)),str(round(ratiouls[i], 4)),width=widthofcoeff))
+    print('{:<{width}s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),width=widthofcoeff))
