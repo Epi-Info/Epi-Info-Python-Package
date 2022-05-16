@@ -1170,10 +1170,12 @@ class LogisticRegressionResults:
 
   def show(self):
     widthofcoeff = 16
+    showFitTests = True
     for varname in self.Variables:
       if len(varname) > widthofcoeff:
         widthofcoeff = len(varname)
     regType = 'LOGISTIC'
+    testType = 'Minus Two Log-Likelihood'
     ratioType = 'Odds'
     ratios = self.OR
     ratiolls = self.ORLCL
@@ -1181,7 +1183,9 @@ class LogisticRegressionResults:
     likelihood = self.MinusTwoLogLikelihood
     interactions = self.InteractionOR
     if len(self.OR) == 0:
+      showFitTests = False
       regType = 'LOG BINOMIAL'
+      testType = 'Log-Likelihood'
       ratioType = 'Risk'
       ratios = self.RR
       ratiolls = self.RRLCL
@@ -1195,4 +1199,12 @@ class LogisticRegressionResults:
     for i in range(len(self.Variables)):
       if i < len(self.Variables) - 1:
         print('{:<{width}s}{:^16s}{:^16s}{:^16s}{:^8s}{:^8s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),str(round(ratios[i], 4)),str(round(ratiolls[i], 4)),str(round(ratiouls[i], 4)),width=widthofcoeff))
-    print('{:<{width}s}{:^16s}{:^16s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),width=widthofcoeff))
+    print('{:<{width}s}{:^16s}{:^16s}\n'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),width=widthofcoeff))
+    print('{:<{width}s}{:>8s}'.format('Number of Iterations',str(round(self.Iterations, 0)),width=26))
+    print('{:<{width}s}{:>8s}'.format(testType,str(round(likelihood, 2)),width=26))
+    print('{:<{width}s}{:>8s}'.format('Number of Observations',str(round(self.CasesIncluded, 0)),width=26))
+    if showFitTests:
+      print()
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Fit Test','Value','DF','P',width=18))
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Score',str(round(self.Score, 4)),str(round(self.ScoreDF, 4)),str(round(self.ScoreP, 4)),width=18))
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Likelihood Ratio',str(round(self.LikelihoodRatio, 4)),str(round(self.LikelihoodRatioDF, 4)),str(round(self.LikelihoodRatioP, 4)),width=18))
