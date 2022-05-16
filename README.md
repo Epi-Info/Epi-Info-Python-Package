@@ -116,7 +116,7 @@ Number of Iterations             6
 Log-Likelihood             -197.81
 Number of Observations         309
 ```
-Individual result functions provide greater precision, as well as meaningful risk ratios for interaction terms.<br>
+Individual result functions provide greater precision, as well as parameter iteration history and meaningful risk ratios for interaction terms.<br>
 ```
 print(rslts.Variables)
 print(rslts.Beta)
@@ -132,8 +132,9 @@ print(rslts.CasesIncluded)
 for ior in rslts.InteractionOR:
     print(ior)
 # To see start values and subsequent beta parameter values in the iteration history.
-#for ph in rslts.ParameterHistory:
-#    print(ph)
+print()
+for ph in rslts.ParameterHistory:
+    print(ph)
 ```
 ```
 ['ChefSalad', 'EggSaladSandwich', 'CONSTANT']
@@ -147,6 +148,13 @@ for ior in rslts.InteractionOR:
 6
 -197.80804698840117
 309
+
+[0.01869462073987116, 0.015412272950627526, -0.1434745513345579]
+[0.0533138014543878, 0.04717548051038478, -0.2716280030939786]
+[0.13274826883584456, 0.12025288102095788, -0.47550359060596425]
+[0.24761248723857532, 0.22117400493838194, -0.7059060377582914]
+[0.321489489732141, 0.27846569448895875, -0.8352770236314675]
+[0.33549848896238826, 0.2868833735148343, -0.8573745536603651]
 ```
 Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
 #### EICSTables
