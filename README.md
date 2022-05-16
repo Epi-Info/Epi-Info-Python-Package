@@ -37,6 +37,28 @@ ivdict['exposureVariables'] = ['column0', 'column1', column2, 'column0*column1']
 # ivdict['Group'] = 'matchgroupcolumn' # optional for matched case control studies
 reg = LogisticRegression()
 rslts = reg.doRegression(ivdict, dataset)
+```
+'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
+```
+rslts.show()
+```
+```
+LOGISTIC REGRESSION RESULTS
+Variable          Coefficient    Standard Error    Odds Ratio    Lower   Upper  
+ChefSalad            1.145           0.3429          3.1424      1.6046  6.1539 
+EggSaladSandwich     1.0418          0.3146          2.8343       1.53   5.2506 
+CONSTANT            -0.7644          0.3602     
+
+Number of Iterations             4
+Minus Two Log-Likelihood    393.37
+Number of Observations         309
+
+Fit Test             Value      DF       P
+Score              14.7777       2  0.0006
+Likelihood Ratio   15.5999       2  0.0004
+```
+Individual result functions provide greater precision, as well as meaningful odds ratios for interaction terms.<br>
+```
 print(rslts.Variables)
 print(rslts.Beta)
 print(rslts.SE)
@@ -53,16 +75,20 @@ print(rslts.LikelihoodRatio, rslts.LikelihoodRatioDF, rslts.LikelihoodRatioP)
 for ior in rslts.InteractionOR:
     print(ior)
 ```
-'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
 ```
-rslts.show()
-```
-```
-LOGISTIC REGRESSION RESULTS
-Variable          Coefficient    Standard Error    Odds Ratio        Lower           Upper      
-ChefSalad            1.145           0.3429          3.1424          1.6046          6.1539     
-EggSaladSandwich     1.0418          0.3146          2.8343           1.53           5.2506     
-CONSTANT            -0.7644          0.3602
+['ChefSalad', 'EggSaladSandwich', 'CONSTANT']
+[1.1449910849486071, 1.041809442441627, -0.7644353230444337]
+[0.34290905726619875, 0.31456430262135265, 0.3601766334566801]
+[3.1424133419378486, 2.834340954032848]
+[1.6046436032972575, 1.5300107079664744]
+[6.153865937145245, 5.250609425070682]
+[3.3390517418143193, 3.311912488988536, -2.1223901053991483]
+[0.0008406490630090172, 0.0009266052827040479, 0.03380499507237897]
+4
+393.3736390464802
+309
+14.777703590233484 2 0.0006
+15.599932822362803 2 0.0004
 ```
 Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
 #### LogBinomialRegression
@@ -74,23 +100,6 @@ ivdict['exposureVariables'] = ['column0', 'column1', column2, 'column0*column1']
 #ivl['StartValues'] = [0.0, 0.0, 0.0, 0.0, -0.45] # Optional user-supplied starting beta values
 reg = LogBinomialRegression()
 rslts = reg.doRegression(ivdict, dataset)
-print(rslts.Variables)
-print(rslts.Beta)
-print(rslts.SE)
-print(rslts.RR)
-print(rslts.RRLCL)
-print(rslts.RRUCL)
-print(rslts.Z)
-print(rslts.PZ)
-print(rslts.Iterations)
-print(rslts.LogLikelihood)
-print(rslts.CasesIncluded)
-# To see adjusted relative risks for interaction terms:
-for ior in rslts.InteractionRR:
-    print(ior)
-# To see start values and subsequent beta parameter values in the iteration history.
-for ph in rslts.ParameterHistory:
-    print(ph)
 ```
 'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables and options.<br>
 ```
@@ -98,10 +107,46 @@ rslts.show()
 ```
 ```
 LOG BINOMIAL REGRESSION RESULTS
-Variable          Coefficient    Standard Error    Risk Ratio        Lower           Upper      
-ChefSalad            0.3355          0.1155          1.3986          1.1152          1.7541     
-EggSaladSandwich     0.2869          0.0863          1.3323          1.125           1.5777     
-CONSTANT            -0.8574          0.1275
+Variable          Coefficient    Standard Error    Risk Ratio    Lower   Upper  
+ChefSalad            0.3355          0.1155          1.3986      1.1152  1.7541 
+EggSaladSandwich     0.2869          0.0863          1.3323      1.125   1.5777 
+CONSTANT            -0.8574          0.1275     
+
+Number of Iterations             6
+Log-Likelihood             -197.81
+Number of Observations         309
+```
+Individual result functions provide greater precision, as well as meaningful risk ratios for interaction terms.<br>
+```
+print(rslts.Variables)
+print(rslts.Beta)
+print(rslts.SE)
+print(rslts.OR)
+print(rslts.ORLCL)
+print(rslts.ORUCL)
+print(rslts.Z)
+print(rslts.PZ)
+print(rslts.Iterations)
+print(rslts.MinusTwoLogLikelihood)
+print(rslts.CasesIncluded)
+for ior in rslts.InteractionOR:
+    print(ior)
+# To see start values and subsequent beta parameter values in the iteration history.
+#for ph in rslts.ParameterHistory:
+#    print(ph)
+```
+```
+['ChefSalad', 'EggSaladSandwich', 'CONSTANT']
+[0.33549848896238826, 0.2868833735148343, -0.8573745536603651]
+[0.11554257116282983, 0.08628109356012013, 0.1274780872455785]
+[1.398637416791415, 1.3322688265841982]
+[1.1152060757938649, 1.124991563339945]
+[1.7541032694396341, 1.5777364774349802]
+[2.9036785799892124, 3.324985366752865, -6.725662207408926]
+[0.003688065851624343, 0.0008842317775790469, 1.7479564573893102e-11]
+6
+-197.80804698840117
+309
 ```
 Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
 #### EICSTables
