@@ -1085,9 +1085,9 @@ class EIMatrix:
           self.set_mdblllfst(ldbllfst)
           strCalcLikelihoodError[0] = "Regression not converging"
       elif ldbll[0] - ldbloldll < ldblConv:
-        self.set_mdblaB([])
-        for i in range(len(oldmdblaB)):
-          self.get_mdblaB().append(oldmdblaB[i])
+        #self.set_mdblaB([])
+        #for i in range(len(oldmdblaB)):
+        #  self.get_mdblaB().append(oldmdblaB[i])
         self.set_mintIterations(self.get_mintIterations() - 1)
         self.set_mdblllfst(ldbllfst)
         self.set_mdbllllast(ldbll)
