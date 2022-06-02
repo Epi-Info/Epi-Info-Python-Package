@@ -1091,6 +1091,7 @@ class EIMatrix:
         #self.set_mintIterations(self.get_mintIterations() - 1)
         self.set_mdblllfst(ldbllfst)
         self.set_mdbllllast(ldbll)
+        self.inv(self.get_mdblaJacobian(), self.get_mdblaInv())
         return
 
       if doThisStuff == True:
