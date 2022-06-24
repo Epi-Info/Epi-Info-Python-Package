@@ -202,12 +202,16 @@ class randata:
         
         index = self._Indexes[col]
         allrows = set()
-        if cs:
+        if not cs:
             for c in index:
+                if c is None:
+                    continue
                 if value.lower() in c.lower():
                     allrows = allrows.union(index[c])
             return [self._Dictlist[row] for row in allrows]
         for c in index:
+            if c is None:
+                continue
             if value in c:
                 allrows = allrows.union(index[c])
         return [self._Dictlist[row] for row in allrows]
