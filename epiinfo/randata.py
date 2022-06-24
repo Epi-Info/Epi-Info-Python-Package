@@ -253,6 +253,17 @@ class randata:
                     return []
                 rows = index[value]
                 return [self._Dictlist[row] for row in rows]
+            else:
+                indexname = where
+                value = values
+                if indexname not in self._Indexes:
+                    print(indexname, 'not indexed')
+                    return []
+                index = self._Indexes[indexname]
+                if value not in index:
+                    return []
+                rows = index[value]
+                return [self._Dictlist[row] for row in rows]
         
         elif values is not None:
             if type(where) == str and type(values) == str:
