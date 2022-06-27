@@ -1170,6 +1170,9 @@ class LogisticRegressionResults:
     self._ErrorMessage = v
 
   def show(self):
+    if len(self.Beta) == 0:
+      print('Nothing to show')
+      return
     widthofcoeff = 16
     showFitTests = True
     for varname in self.Variables:

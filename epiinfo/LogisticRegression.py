@@ -1179,7 +1179,7 @@ class LogisticRegression:
       return
     if self.depVarIsBinary(self.currentTable) == False:
       print('Dependent variable must have exactly two values.')
-      return
+      return self.logisticResults
     self.getRawData()
 
     lintConditional = 0
