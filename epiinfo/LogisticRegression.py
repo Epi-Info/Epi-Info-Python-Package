@@ -1143,6 +1143,23 @@ class LogisticRegression:
 
     return iorOut
 
+  def depVarIsBinary(self, dataTable):
+    """ Checks that the dependent variable is binary
+        Parameters:
+          dataTable (list(dict)): The analysis dataset
+        Returns:
+          bool
+    """
+    depvalues = set([])
+    for row in dataTable:
+      depvalues.add(row[0])
+      if len(depvalues) > 2:
+        return False
+    if len(depvalues) == 2:
+      return True
+    else:
+      return False
+
   def doRegression(self, inputVariableList, dataTable):
     """ Executes the supporting functions to run the analysis
         Parameters:
@@ -1159,6 +1176,9 @@ class LogisticRegression:
     self.createSettings(inputVariableList)
     self.logisticResults = LogisticRegressionResults()
     if self.getCurrentTable(self.mstrDependVar, inputVariableList['exposureVariables']) == False:
+      return
+    if self.depVarIsBinary(self.currentTable) == False:
+      print('Dependent variable must have exactly two values.')
       return
     self.getRawData()
 
