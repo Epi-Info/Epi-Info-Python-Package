@@ -606,6 +606,51 @@ class TablesAnalysis:
     stats['CorrectedX2P'] = RRStatsResults[11]
     return stats
 
+  def transposeMatrix(self, matrix):
+    """ Computes the MxN table statistics
+        Parameters:
+          matrix (list(list)): A list of lists of ints
+        Returns:
+          list of lists
+    """
+    c = len(matrix[0])
+    r = len(matrix)
+    mtx = []
+    for j in range(c):
+      nsma0 = []
+      for i in range(r):
+        nsa = matrix[i]
+        cellvalue = nsa[j]
+        nsma0.append(cellvalue)
+      mtx.append(nsma0)
+    return mtx
+
+  def FEXACT(self, SortedRows):
+    """ Computes the MxN table statistics
+        Parameters:
+          SortedRows (list(list)): A list of lists of ints
+        Returns:
+          float
+    """
+    table0 = []
+    for i in range(len(SortedRows) + 1):
+      nsma = [0]
+      if i == 0:
+        for j in range(len(SortedRows[0])):
+          nsma.append(0)
+        table0.append(nsma)
+        continue
+      dr0 = SortedRows[i - 1]
+      for d in dr0:
+        nsma.append(d)
+      table0.append(nsma)
+    table = table0
+    print(table)
+    if len(table) > len(table[0]):
+      table = self.transposeMatrix(table0)
+    print(table)
+    return math.inf
+
   def MXNCompute(self, table):
     """ Computes the MxN table statistics
         Parameters:
@@ -644,6 +689,7 @@ class TablesAnalysis:
     stats['ChiSq'] = chiSq
     stats['ChiSqDF'] = (len(table) - 1) * (len(table[0]) - 1)
     stats['ChiSqP'] = chiSqP
+    stats['FishersExact'] = self.FEXACT(table)
     return stats
 
   def Run(self, inputVariableList, dataTable):

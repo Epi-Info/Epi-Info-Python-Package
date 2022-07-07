@@ -606,6 +606,92 @@ class TablesAnalysis:
     stats['CorrectedX2P'] = RRStatsResults[11]
     return stats
 
+  def transposeMatrix(self, matrix):
+    """ Computes the MxN table statistics
+        Parameters:
+          matrix (list(list)): A list of lists of ints
+        Returns:
+          list of lists
+    """
+    c = len(matrix[0])
+    r = len(matrix)
+    mtx = []
+    for j in range(c):
+      nsma0 = []
+      for i in range(r):
+        nsa = matrix[i]
+        cellvalue = nsa[j]
+        nsma0.append(cellvalue)
+      mtx.append(nsma0)
+    return mtx
+
+  def FEXACT(self, SortedRows):
+    """ Computes the MxN table statistics
+        Parameters:
+          SortedRows (list(list)): A list of lists of ints
+        Returns:
+          float
+    """
+    table0 = []
+    for i in range(len(SortedRows) + 1):
+      nsma = [0]
+      if i == 0:
+        for j in range(len(SortedRows[0])):
+          nsma.append(0)
+        table0.append(nsma)
+        continue
+      dr0 = SortedRows[i - 1]
+      for d in dr0:
+        nsma.append(d)
+      table0.append(nsma)
+    table = table0
+    print(table)
+    if len(table) > len(table[0]):
+      table = self.transposeMatrix(table0)
+    print(table)
+    return math.inf
+
+  def MXNCompute(self, table):
+    """ Computes the MxN table statistics
+        Parameters:
+          table (list(list)): A list of lists of ints
+        Returns:
+          dict
+    """
+    stats = {}
+    if len(table) < 2 or len(table[0]) < 2:
+      return stats
+    chiSq = 0.0
+    lowExpectation = False
+    totals = [None] * (len(table[0]) + 1)
+    totals[len(table[0])] = 0.0
+    rowtotals = [None] * len(table)
+    for i in range(len(table)):
+      rowtotals[i] = 0.0
+      for j in range(len(table[0])):
+        if i == 0:
+          totals[j] = 0.0
+        totals[j] += table[i][j]
+        totals[len(table[0])] += table[i][j]
+        rowtotals[i] += table[i][j]
+    ps = [0.0] * len(table[0])
+    for i in range(len(table[0])):
+      ps[i] = totals[i] / totals[len(table[0])]
+    for i in range(len(table)):
+      for j in range(len(table[0])):
+        observed = table[i][j]
+        expected = rowtotals[i] * ps[j]
+        OminusESqOverE = (observed - expected) ** 2.0 / expected;
+        chiSq += OminusESqOverE
+        if expected < 5.0:
+          lowExpectation = True
+    chiSqP = self.PValFromChiSq(chiSq, (len(table) - 1) * (len(table[0]) - 1))
+    stats['ChiSq'] = chiSq
+    stats['ChiSqDF'] = (len(table) - 1) * (len(table[0]) - 1)
+    stats['ChiSqP'] = chiSqP
+    stats['FishersExact'] = self.FEXACT(table)
+    return stats
+
   def Run(self, inputVariableList, dataTable):
     """ Executes the supporting functions to run the analysis
         Parameters:
@@ -664,13 +750,10 @@ class TablesAnalysis:
       tables.append(onetable)
       rowtotals.append(self.RowTotals(onetable))
       coltotals.append(self.ColumnTotals(onetable))
-      statistics.append(self.TwoX2Compute(onetable))
+      if len(outcomeValues) == 2 and len(exposureValues) == 2:
+        statistics.append(self.TwoX2Compute(onetable))
+      else:
+        statistics.append(self.MXNCompute(onetable))
       variablenames.append(inputVariableList['outcomeVariable'] + ' * ' + exposure)
       values.append([outcomeValues, exposureValues])
-    #print(variablenames)
-    #print(values)
-    #print(tables)
-    #print(rowtotals)
-    #print(coltotals)
-    #print(statistics)
     return {'Variables' : variablenames, 'VariableValues' : values, 'Tables' : tables, 'RowTotals' : rowtotals, 'ColumnTotals' : coltotals, 'Statistics' : statistics}
