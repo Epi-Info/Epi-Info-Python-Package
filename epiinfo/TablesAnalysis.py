@@ -625,6 +625,293 @@ class TablesAnalysis:
       mtx.append(nsma0)
     return mtx
 
+  def iwork(self, iwkmax, iwkpt, number, itype):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          int
+    """
+    iwork = iwkpt[0]
+    if itype == 2 or itype == 3:
+      iwkpt[0] += number
+    else:
+      if iwork % 2 != 0:
+        iwork += 1
+      iwkpt[0] += 2 * number
+      iwork /= 2
+    return int(iwork)
+
+  def f9xact(self, n, mm, ir, iroffset, fact):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          float
+    """
+    f9xact = fact[mm]
+    for k in range(1, n + 1):
+      f9xact -= fact[ir[k + iroffset - 1]]
+    return f9xact
+
+  def f2xact(self, nrow, ncol, table, ldtabl, expect, percnt, emin, prt, pre, fact, ico, iro, kyy, idif, irn, key, ldkey, ipoin, ldstp, stp, ifrq, dlp, dsp, tm, key2, iwk, rwk):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    f5itp = 0
+    for i in range(1, 2 * ldkey + 1):
+      key[i] = -9999
+      key2[i] = -9999
+    preops = 0
+    ncell = 0
+    ifault = 1
+    iflag = 1
+    tmp = 0.0
+    pv = 0.0
+    df = 0.0
+    obs2 = 0.0
+    obs3 = 0.0
+    chisq = False
+    pre[0] = 0.0
+    itop = 0
+    emn = 0.0
+    emx = 1.0e30
+    tol = 3.45254e-7
+    amiss = -12345.0
+    imax = 2147483647
+    if expect > 0.0:
+      emn = emin
+    else:
+      emn = emx
+    k = ncol
+    # Variables for f3xact
+    i31 = 1
+    i32 = i31 + k
+    i33 = i32 + k
+    i34 = i33 + k
+    i35 = i34 + k
+    i36 = i35 + k
+    i37 = i36 + k
+    i38 = i37 + k
+    # Variables for f4xact
+    k = nrow + ncol + 1
+    i41 = 1
+    i42 = i41 + k
+    i43 = i42 + k
+    i44 = i43 + k
+    i45 = i44 + k
+    i46 = i45 + k
+    if nrow > ldtabl:
+      return
+    if ncol <= 1:
+      return
+    ntot = 0
+    for r in range(1, nrow + 1):
+      iro[r] = 0
+      for c in range(1, ncol + 1):
+        if table[r][c] < -0.0001:
+          return
+        iro[r] += table[r][c]
+        ntot += table[r][c]
+    riro = [0] * (nrow + 1)
+    for r in range(1, nrow + 1):
+      riro[r] = iro[r]
+    iro = riro
+    if ntot == 0:
+      prt[0] = amiss;
+      pre[0] = amiss;
+      return
+    for c in range(1, ncol + 1):
+      ico[c] = 0
+      for r in range(1, nrow + 1):
+        ico[c] += table[r][c]
+    rico = [0] * (ncol + 1)
+    for c in range(1, nrow + 1):
+      rico[c] = ico[c]
+    ico = rico
+    iro.sort()
+    ico.sort()
+    nro = nrow
+    nco = ncol
+    rkyy = [0] * (nro + 1)
+    rkyy[1] = 1
+    mj = ncol
+    for r in range(2, nro + 1):
+      rkyy[r] = rkyy[r - 1] * (iro[r - 1] + 1)
+      mj /= rkyy[r - 1]
+    kyy = rkyy
+    kmax = (iro[nro] + 1) * kyy[nro - 1]
+    fact[0] = 0.0
+    fact[1] = 0.0
+    fact[2] = math.log(2.0)
+    i = 3
+    while i <= ntot:
+      fact[i] = fact[i - 1] + math.log(float(i))
+      mj = i + 1
+      if mj <= ntot:
+        fact[mj] = fact[i] + fact[2] + fact[int(mj / 2)] - fact[int(mj / 2) - 1]
+      i += 2
+    obs = tol
+    ntot = 0
+    dd = 0.0
+    for mj in range(1, nco + 1):
+      dd = 0.0
+      for r in range(1, nro + 1):
+        dd += fact[table[r][mj]]
+        ntot += table[r][mj]
+      obs += fact[ico[mj]] - dd
+    dro = self.f9xact(nro, ntot, iro, 1, fact)
+    prt[0] = math.exp(obs - dro)
+    # Initialize pointers
+    k = nco
+    last = ldkey + 1
+    jkey = ldkey + 1
+    jstp = ldstp + 1
+    jstp2 = 3 * ldstp + 1
+    jstp3 = 4 * ldstp + 1
+    jstp4 = 5 * ldstp + 1
+    ikkey = 0
+    ikstp = 0
+    ikstp2 = 2 * ldstp
+    ipo = 1
+    ipoin[1] = 1
+    stp[1] = 0.0 # TODO: index 1 is out of range???
+    ifrq[1] = 1
+    ifrq[ikstp2 + 1] = -1
+    class goto110(Exception): pass
+    class break110(Exception): pass
+    class goto130(Exception): pass
+    class break130(Exception): pass
+    class goto310(Exception): pass
+    class break310(Exception): pass
+    class goto150(Exception): pass
+    class break150(Exception): pass
+    while True: # Fortran line 110
+      try:
+        kb = nco - k + 1
+        ks = 0
+        n = ico[kb] #Ends up being the lowest column total
+        kd = nro + 1;
+        kmax = nro
+        for i in range(1, nro + 1):
+          idif[i] = 0
+        while True: # Fortran line 130
+          try:
+            kd = kd - 1 # So kd is now highest index of row totals vector
+            ntot = min(n, iro[kd]) # The lowest column total or the highest row total??
+            idif[kd] = ntot
+            if idif[kmax] == 0:
+              kmax -= 1
+            n -= ntot
+            if n > 0 and kd != 1:
+              raise goto130
+            k1 = 0
+            if n != 0:
+              while True: # Fortran line 310
+                try:
+                  iflag = [1]
+                  # TODO self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                  if iflag[0] == 3:
+                    k = k - 1
+                    itop = 0
+                    ikkey = jkey - 1
+                    ikstp = jstp - 1
+                    ikstp2 = jstp2 - 1
+                    jkey = ldkey - jkey + 2
+                    jstp = ldstp - jstp + 2
+                    jstp2 = 2 * ldstp + jstp
+                    for f in range(1,  2 * ldkey + 1):
+                      key2[f] = -9999
+                    if k >= 2:
+                      raise goto310
+                    return
+                  else:
+                    raise goto110
+                except goto310:
+                  continue
+                except break310:
+                  break
+            k1 = k - 1
+            n = ico[kb]
+            ntot = 0
+            # kb began as 1 less than the FORTRAN value so this is the same as in FORTRAN
+            for i in range(kb + 1, nco + 1):
+              ntot += ico[i]
+            while True: # Fortran line 150
+              try:
+                for i in range(1, nro + 1):
+                  irn[i] = iro[i] - idif[i]
+                nrb = 0;
+                nro2 = 0
+                ii = 0
+                if k1 > 1:
+                  i = nro
+                  if nro == 2:
+                    if irn[1] > irn[2]:
+                      ii = irn[1]
+                      irn[1] = irn[2]
+                      irn[2] = ii
+                  elif nro == 3:
+                    ii = irn[1]
+                    if ii > irn[3]:
+                      if ii > irn[2]:
+                        if irn[2] > irn[3]:
+                          irn[1] = irn[3]
+                          irn[3] = ii
+                        else:
+                          irn[1] = irn[1]
+                          irn[2] = irn[2]
+                          irn[3] = ii
+                      else:
+                        irn[1] = irn[3]
+                        irn[3] =  irn[2]
+                        irn[2] = ii
+                    elif ii > irn[2]:
+                      irn[1] = irn[2]
+                      irn[2] = ii
+                    elif irn[2] > irn[3]:
+                      ii = irn[2]
+                      irn[2] = irn[3]
+                      irn[3] = ii
+                  else:
+                    for j in range(2, nro + 1):
+                      i = j - 1
+                      ii = irn[j]
+                      while True:
+                        if ii < irn[i]:
+                          irn[i + 1] = irn[i]
+                          i -= 1
+                          if i > 0:
+                            continue
+                        irn[i + 1] = ii
+                        break
+                  for i in range(1, nro + 1):
+                    if irn[i] != 0:
+                      break
+                  nrb = i
+                  nro2 = nro - i + 1
+                else:
+                  nrb = 1
+                  nro2 = nro
+                raise break110
+              except goto150:
+                continue
+              except break150:
+                  break
+            raise break110
+          except goto130:
+            continue
+          except break130:
+            break
+        raise break110
+      except goto110:
+        continue
+      except break110:
+        break
+
   def FEXACT(self, SortedRows):
     """ Computes the MxN table statistics
         Parameters:
@@ -645,11 +932,73 @@ class TablesAnalysis:
         nsma.append(d)
       table0.append(nsma)
     table = table0
-    print(table)
     if len(table) > len(table[0]):
       table = self.transposeMatrix(table0)
-    print(table)
-    return math.inf
+    ncol = len(table[0]) - 1
+    nrow = len(table) - 1
+    ldtabl = nrow
+    expect = 0.0
+    percent = 90.0
+    emin = 1.0
+    prt = [0.0]
+    pre = [0.0]
+    iwkmax = 200000
+    mult = 30
+    ireal = 4
+    iwkpt = [1]
+    ntot = 0
+    for r in range(1, nrow + 1):
+      for c in range(1, ncol + 1):
+        ntot += table[r][c]
+    nco = ncol
+    nro = nrow
+    k = nrow + ncol + 1
+    kk = k * ncol
+    ldkey = 0
+    ldstp = 0
+    numb = 0
+    i1 = self.iwork(iwkmax, iwkpt, ntot + 1, ireal) - 1
+    i2 = self.iwork(iwkmax, iwkpt, nco, 2) - 1
+    i3 = self.iwork(iwkmax, iwkpt, nco, 2) - 1
+    i3a = self.iwork(iwkmax, iwkpt, nco, 2) - 1
+    i3b = self.iwork(iwkmax, iwkpt, nro, 2) - 1
+    i3c = self.iwork(iwkmax, iwkpt, nro, 2) - 1
+    iiwk = self.iwork(iwkmax, iwkpt, max(5 * k + 2 * kk, 800 + 7 * ncol), 2) - 1
+    irwk = self.iwork(iwkmax, iwkpt, max(400 + ncol + 1, k), ireal) - 1
+    if ireal == 4:
+      numb = 18 + 10 * mult
+      ldkey = int((iwkmax - iwkpt[0] + 1) / numb)
+    else:
+      numb = 12 * 8 * mult
+      ldkey = int((iwkmax - iwkpt[0] + 1) / numb)
+    ldstp = mult * ldkey
+    i4 = self.iwork(iwkmax, iwkpt, 2 * ldkey, 2) - 1
+    i5 = self.iwork(iwkmax, iwkpt, 2 * ldkey, 2) - 1
+    i6 = self.iwork(iwkmax, iwkpt, 2 * ldstp, ireal) - 1
+    i7 = self.iwork(iwkmax, iwkpt, 6 * ldstp, 2) - 1
+    i8 = self.iwork(iwkmax, iwkpt, 2 * ldkey, ireal) - 1
+    i9 = self.iwork(iwkmax, iwkpt, 2 * ldkey, ireal) - 1
+    i9a = self.iwork(iwkmax, iwkpt, 2 * ldkey, ireal) - 1
+    i10 = self.iwork(iwkmax, iwkpt, 2 * ldkey, 2) - 1
+    i1array = [0.0] * irwk
+    i2array = [0] * (i3 - i2 + 1)
+    i3array = [0] * (i3a - i3 + 1)
+    i3aarray = [0] * (i3b - i3a + 1)
+    i3barray = [0] * (i3c - i3b + 1)
+    i3carray = [0] * (iiwk - i3c + 1)
+    i4array = [0] * (i5 - i4 + 1)
+    i5array = [0] * (i7 - i5 + 1)
+    i6array = [0.0] * (i8 - i6 + 1)
+    i7array = [0] * (i10 - i7 + 1)
+    i8array = [0.0] * (i9 - i8 + 1)
+    i9array = [0.0] * (i9a - i9 + 1)
+    i9aarray = [0.0] * (iwkmax - i9a + 1)
+    i10array = [0] * int(2 * ldkey + 1)
+    iiwkarray = [0] * (i4 - iiwk + 1)
+    irwkarray = [0.0] * (i6 - irwk + 1)
+    self.f2xact(nrow, ncol, table, ldtabl, expect, percent, emin, prt, pre, i1array, i2array, i3array, i3aarray, i3barray, i3carray,
+                i4array, int(ldkey), i5array, ldstp, i6array, i7array, i8array, i9array, i9aarray, i10array, iiwkarray, irwkarray)
+    return pre[0]
 
   def MXNCompute(self, table):
     """ Computes the MxN table statistics
