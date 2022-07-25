@@ -671,8 +671,8 @@ class TablesAnalysis:
         key[last[0] + keyoffset - 1] = -9999
         j = nrow 
         while j >= 2:
-          irow[j] = kval / kyy[j]
-          kval -= irow[j] / kyy[j]
+          irow[j] = int(kval / kyy[j])
+          kval -= irow[j] * kyy[j]
           j -= 1
         irow[1] = kval
         ipn[0] = last[0]
@@ -681,6 +681,120 @@ class TablesAnalysis:
         last[0] = 0
         iflag[0] = 3
         break
+
+  def f8xact(self, irow, irowoffset, iz, i1, izero, noo, noooffset):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    i = 0
+    for i in range(1, i1):
+      noo[i + noooffset - 1] = irow[i + irowoffset - 1]
+    resetI = True
+    for i in range(i1, izero):
+      if iz >= irow[i + irowoffset - 1 + 1]:
+        resetI = False
+        break
+      noo[i + noooffset - 1] = irow[i + irowoffset - 1 + 1]
+    if resetI == True:
+      i = izero
+    noo[i + noooffset - 1] = iz
+    while True:
+      i += 1
+      if i > izero:
+        return
+      noo[i + noooffset - 1] = irow[i + irowoffset - 1]
+
+  def alogam(self, x, ifault):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          float
+    """
+    class goto10(Exception): pass
+    class break10(Exception): pass
+    alogam = 0.0
+    a1 = 0.918938533204673
+    a2 = 0.00595238095238
+    a3 = 0.00793650793651
+    a4 = 0.002777777777778
+    a5 = 0.08333333333333
+    half = 0.5
+    zero = 0.0
+    one = 1.0
+    seven = 7.0
+    alogam = zero
+    ifault = 1
+    if x < zero:
+      return alogam
+    ifault = 0
+    y = x
+    f = zero
+    if y > seven:
+      z = one / (y * y)
+      alogam = f + (y - half) * log(y) - y + a1 + (((-a2 * z + a3) * z - a4) * z + a5) / y
+      return alogam
+    f = y
+    while True: # Fortran line 10
+      y = y + one
+      if y >= seven:
+        pass
+      else:
+        f = f * y
+        continue
+      f = -1.0 * log(f)
+      z = one / (y * y)
+      alogam = f + (y - half) * log(y) - y + a1 + (((-a2 * z + a3) * z - a4) * z + a5) / y
+      return alogam
+
+  def gamds(self, y, p, ifault):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          float
+    """
+    gammds = 0.0
+    ifail = 1
+    e = 1.0e-6
+    zero = 0.0
+    one = 1.0
+    ifault = 1
+    gammds = zero
+    if y <= 0 or p <= 0:
+      return gammds
+    ifault = 2
+    f = math.exp(p * math.log(y) - self.alogam(p + one, ifail) - y)
+    if f == zero:
+      return gammds
+    ifault = 0
+    c = one
+    gammds = one
+    a = p
+    while True: # Fortran line 10
+      a = a + one
+      c = c * y / a
+      gammds = gammds + c
+      if c / gammds > e:
+        continue
+      break
+    gammds = gammds * f
+    return gammds
+
+  def f11act(self, irow, irowoffset, i1, i2, noo, noooffset):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    for i in range(1, i1):
+      noo[i + noooffset - 1] = irow[i + irowoffset - 1]
+    for i in range(i1, i2 + 1):
+      noo[i + noooffset - 1] = irow[i + irowoffset - 1 + 1]
 
   def f10act(self, nrow, irow, irowoffset, ncol, icol, icoloffset, val, xmin, fact, nd, ne, m):
     """ Supports the MxN table statistics
@@ -691,17 +805,17 @@ class TablesAnalysis:
     """
     for i in range(1, nrow):
       nd[i] = 0
-    iz = icol[1 + icoloffset - 1] / nrow
+    iz = int(icol[1 + icoloffset - 1] / nrow)
     ne[1] = iz
-    ix = icol[1 + icoloffset - 1] - nrow * iz
+    ix = int(icol[1 + icoloffset - 1] - nrow * iz)
     m[1] = ix
     if ix != 0:
       nd[ix] += 1
     for i in range(2, ncol + 1):
-      ix = icol[i + icoloffset - 1] / nrow
+      ix = int(icol[i + icoloffset - 1] / nrow)
       ne[i] = ix
       iz += ix
-      ix = icol[i + icoloffset - 1] - nrow * ix
+      ix = int(icol[i + icoloffset - 1] - nrow * ix)
       m[i] = ix
       if ix != 0:
         nd[ix] += 1
@@ -710,18 +824,243 @@ class TablesAnalysis:
       nd[i] += nd[i + 1]
       i -= 1
     ix = 0
-    nrw1 = nrow + 1
+    nrw1 = int(nrow + 1)
     i = nrow
     while i >= 2:
-      ix += iz + nd[nrw1 - i] - irow[i + irowoffset - 1]
+      ix += int(iz + nd[nrw1 - i] - irow[i + irowoffset - 1])
       if ix < 0:
         return
       i -= 1
     for i in range(1, ncol + 1):
-      ix = ne[i]
-      iz = m[i]
+      ix = int(ne[i])
+      iz = int(m[i])
       val[0] += iz * fact[ix + 1] + (nrow - iz) * fact[ix]
     xmin[0] = True
+
+  def f4xact(self, nrow, irow, irowoffset, ncol, icol, icoloffset, dsp, fact, icstkk, ncstk, lstk, mstk, nstk, nrstk, irstkk, ystk, tol):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    class goto50(Exception): pass
+    class break50(Exception): pass
+    class goto60(Exception): pass
+    class break60(Exception): pass
+    class goto100(Exception): pass
+    class break100(Exception): pass
+    class goto110(Exception): pass
+    class break110(Exception): pass
+    i = 1
+    j = 1
+    irstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
+    icstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
+    if nrow == 1:
+      for i in range(1, ncol + 1):
+        dsp[0] -= fact[icol[i + icoloffset - 1]]
+      return
+    if ncol == 1:
+      for i in range(1, nrow + 1):
+        dsp[0] -= fact[irow[i + irowoffset - 1]]
+      return
+    if nrow * ncol == 4:
+      if irow[2 + irowoffset - 1] <= icol[2 + icoloffset - 1]:
+        dsp[0] = dsp[0] - fact[irow[2 + irowoffset - 1]] - fact[icol[1 + icoloffset - 1]] - fact[icol[2 + icoloffset - 1] - irow[2 + irowoffset - 1]]
+      else:
+        dsp[0] = dsp[0] - fact[icol[2 + icoloffset - 1]] - fact[irow[1 + irowoffset - 1]] - fact[irow[2 + irowoffset - 1] - icol[2 + icoloffset - 1]]
+      return
+    for i in range(1, nrow + 1):
+      irstk[1][i] = irow[nrow - i + 1 + irowoffset - 1]
+    for j in range(1, ncol + 1):
+      icstk[1][j] = icol[ncol - j + 1 + icoloffset - 1]
+    nro = nrow;
+    nco = ncol
+    nrstk[1] = nro
+    ncstk[1] = nco
+    ystk[1] = 0.0
+    y = 0.0
+    istk = 1
+    l = 1
+    amx = 0.0
+    while True: # Fortran line 50
+      try:
+        ir1 = irstk[istk][1]
+        ic1 = icstk[istk][1]
+        m = 0
+        n = 0
+        k = 0
+        mn = 0
+        if ir1 > ic1:
+          if nro >= nco:
+            m = nco - 1
+            n = 2
+          else:
+            m = nro
+            n = 1
+        elif ir1 < ic1:
+          if nro <= nco:
+            m = nro - 1
+            n = 1
+          else:
+            m = nco
+            n = 2
+        else:
+          if nro <= nco:
+            m = nro - 1
+            n = 1
+          else:
+            m = nco - 1
+            n = 2
+        while True: # Fortran line 60
+          try:
+            if n == 1:
+              i = l
+              j = 1
+            else:
+              i = 1
+              j = l
+            irt = irstk[istk][i]
+            ict = icstk[istk][j]
+            mn = irt
+            if mn > ict:
+              mn = ict
+            y += fact[mn]
+            if irt == ict:
+              nro -= 1
+              nco -= 1
+              irstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA[zfj] = int(irstk[istk][zfj])
+              irstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA1[zfj] = int(irstk[istk + 1][zfj])
+              self.f11act(irstkIA, 1, i, nro, irstkIA1, 1)
+              icstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA[zfj] = int(icstk[istk][zfj])
+              icstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA1[zfj] = int(icstk[istk + 1][zfj])
+              self.f11act(icstkIA, 1, j, nco, icstkIA1, 1)
+              for tk in range(0, len(icstkIA)):
+                icstk[istk][tk] = icstkIA[tk]
+                icstk[istk + 1][tk] = icstkIA1[tk]
+              for tk in range(0, len(icstkIA)):
+                irstk[istk][tk] = irstkIA[tk]
+                irstk[istk + 1][tk] = irstkIA1[tk]
+            elif irt >= ict:
+              nco -= 1
+              irstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA[zfj] = int(irstk[istk][zfj])
+              irstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA1[zfj] = int(irstk[istk + 1][zfj])
+              icstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA[zfj] = int(icstk[istk][zfj])
+              icstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA1[zfj] = int(icstk[istk + 1][zfj])
+              self.f11act(icstkIA, 1, j, nco, icstkIA1, 1)
+              self.f8xact(irstkIA, 1, irt - ict, i, nro, irstkIA1, 1)
+              for tk in range(0, len(icstkIA)):
+                icstk[istk][tk] = icstkIA[tk]
+                icstk[istk + 1][tk] = icstkIA1[tk]
+              for tk in range(0, len(icstkIA)):
+                irstk[istk][tk] = irstkIA[tk]
+                irstk[istk + 1][tk] = irstkIA1[tk]
+            else:
+              nro -= 1
+              irstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA[zfj] = int(irstk[istk][zfj])
+              irstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                irstkIA1[zfj] = int(irstk[istk + 1][zfj])
+              icstkIA = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA[zfj] = int(icstk[istk][zfj])
+              icstkIA1 = [0] * (nrow + ncol + 1)
+              for zfj in range(0, nrow + ncol + 1):
+                icstkIA1[zfj] = int(icstk[istk + 1][zfj])
+              self.f11act(irstkIA, 1, i, nro, irstkIA1, 1)
+              self.f8xact(icstkIA, 1, ict - irt, j, nco, icstkIA1, 1)
+              for tk in range(0, len(icstkIA)):
+                icstk[istk][tk] = icstkIA[tk]
+                icstk[istk + 1][tk] = icstkIA1[tk]
+              for tk in range(0, len(icstkIA)):
+                irstk[istk][tk] = irstkIA[tk]
+                irstk[istk + 1][tk] = irstkIA1[tk]
+            goto90bool = False
+            if nro == 1:
+              for k in range(1, nco + 1):
+                y += fact[icstk[istk + 1][k]]
+              goto90bool = True
+            if goto90bool == False and nco == 1:
+              for k in range(1, nro + 1):
+                y += fact[irstk[istk + 1][k]]
+              goto90bool = True
+            if goto90bool == False:
+              lstk[istk] = l
+              mstk[istk] = m
+              nstk[istk] = n
+              istk += 1
+              nrstk[istk] = nro
+              ncstk[istk] = nco
+              ystk[istk] = y
+              l = 1
+              raise goto50
+            if y >  amx:
+              amx = y
+              if dsp[0] - amx <= tol:
+                dsp[0] = 0.0
+                return
+            while True: # Fortran line 100
+              try:
+                istk -= 1
+                if istk == 0:
+                  dsp[0] -= amx
+                  if dsp[0] - amx <= tol:
+                    dsp[0] = 0.0
+                  return
+                l = int(lstk[istk] + 1)
+                while True: # Fortran line 110
+                  try:
+                    if l > mstk[istk]:
+                      raise goto100
+                    n = nstk[istk]
+                    nro = nrstk[istk]
+                    nco = ncstk[istk]
+                    y = ystk[istk]
+                    if n == 1:
+                      if irstk[istk][l] < irstk[istk][l - 1]:
+                        raise goto60
+                    elif n == 2:
+                      if icstk[istk][l] < icstk[istk][l - 1]:
+                        raise goto60
+                    l += 1
+                    raise goto110
+                  except goto110:
+                    continue
+                  except break110:
+                    break
+                raise break100
+              except goto100:
+                continue
+              except break100:
+                break
+            raise break60
+          except goto60:
+            continue
+          except break60:
+            break
+        raise break50
+      except goto50:
+        continue
+      except break50:
+        break
 
   def f3xact(self, nrow, irow, irowoffset, ncol, icol, icoloffset, dlp, mm, fact, ico, iro, it, lb, nr, nt, nu, itc, ist, stv, alen, tol):
     """ Supports the MxN table statistics
@@ -774,9 +1113,9 @@ class TablesAnalysis:
           dlp[0] -= fact[irow[i + irowoffset - 1]]
       return
     if nrow * ncol == 4:
-      n11 = (irow[1 + irowoffset - 1] + 1) * (icol[1 + icoloffset - 1] + 1) / (mm[0] + 2)
-      n12 = irow[1 + irowoffset - 1] - n11
-      dlp[0] -= fact[n11] - fact[n12] - fact[icol[1 + icoloffset - 1] - n11] - fact[icol[2 + icoloffset - 1] - n12]
+      n11 = int((irow[1 + irowoffset - 1] + 1) * (icol[1 + icoloffset - 1] + 1) / (mm[0] + 2))
+      n12 = int(irow[1 + irowoffset - 1] - n11)
+      dlp[0] = dlp[0] - fact[n11] - fact[n12] - fact[icol[1 + icoloffset - 1] - n11] - fact[icol[2 + icoloffset - 1] - n12]
       return
     val = [0.0]
     xmin = [False]
@@ -834,13 +1173,13 @@ class TablesAnalysis:
                 if nitc > 0:
                   itp = itc[nitc + k] + k
                   nitc -= 1
-                  val = stv[itp]
-                  key = ist[itp]
+                  val[0] = stv[itp]
+                  key = int(ist[itp])
                   ist[itp] = -1
                   i = nco
                   while i >= 2:
                     ico[i] = key % kyy
-                    key /= kyy
+                    key = int(key / kyy)
                     i -= 1
                   ico[i] = key
                   nt[i] = nn - ico[1]
@@ -881,13 +1220,13 @@ class TablesAnalysis:
                         if nitc > 0:
                           itp = itc[nitc + k] + k
                           nitc -= 1
-                          val = stv[itp]
-                          key = ist[itp]
+                          val[0] = stv[itp]
+                          key = int(ist[itp])
                           ist[itp] = -1
                           i = nco
                           while i >= 2:
                             ico[i] = key % kyy
-                            key /= kyy
+                            key = int(key / kyy)
                             i -= 1
                           ico[i] = key
                           nt[i] = nn - ico[1]
@@ -917,7 +1256,7 @@ class TablesAnalysis:
                   try:
                     alen[lev] = alen[lev - 1] + fact[lb[lev]]
                     if lev < nc1s:
-                      nn1 = nt[lev]
+                      nn1 = int(nt[lev])
                       nrt = nr[lev]
                       lev += 1
                       nc1 = nco - lev
@@ -928,7 +1267,92 @@ class TablesAnalysis:
                       raise goto120
                     alen[nco] = alen[lev] + fact[nr[lev]]
                     lb[nco] = nr[lev]
-                    raise break120
+                    v = val[0] + alen[nco]
+                    if nro == 2:
+                      v += fact[ico[1] - lb[1]] + fact[ico[2] - lb[2]]
+                      for i in range(3, nco + 1):
+                        v += fact[ico[i] - lb[i]]
+                      if v < vmn:
+                        vmn = v
+                    elif nro == 3 and nco == 2:
+                      nn1 = int(nn - iro[irl] + 2)
+                      ic1 = int(ico[1] - lb[1])
+                      ic2 = int(ico[2] - lb[2])
+                      n11 = int((iro[irl + 1] + 1) * (ic1 + 1) / nn1)
+                      n12 = int(iro[irl + 1] - n11)
+                      v += fact[n11] + fact[n12] + fact[ic1 - n11] + fact[ic2 - n12]
+                      if v < vmn:
+                        vmn = v
+                    else:
+                      for i in range(1, nco + 1):
+                        it[i] = ico[i] - lb[i]
+                      if nco == 2:
+                        if it[1] > it[2]:
+                          ii = it[1]
+                          it[1] = it[2]
+                          it[2] = ii
+                      elif nco == 3:
+                        ii = it[1]
+                        if ii > it[3]:
+                          if ii > it[2]:
+                            if it[2] > it[3]:
+                              it[1] = it[3]
+                              it[3] = ii
+                            else:
+                              it[1] = it[2]
+                              it[2] = it[3]
+                              it[3] = ii
+                          else:
+                            it[1] = it[3]
+                            it[3] = it[2]
+                            it[2] = ii
+                        elif ii > it[2]:
+                          it[1] = it[2]
+                          it[2] = ii
+                        elif it[2] > it[3]:
+                          ii = it[2]
+                          it[2] = it[3]
+                          it[3] = ii
+                      else:
+                        it.sort()
+                      key = int(it[1] * kyy + it[2])
+                      for i in range(3, nco + 1):
+                        key = int(it[i] + key * kyy)
+                      ipn = int(key % ldst + 1)
+                      skipto180 = False
+                      goto190 = False
+                      ii = ks + ipn
+                      for itp in range(ipn, ldst + 1):
+                        if ist[ii] < 0:
+                          skipto180 = True
+                          goto190 = False
+                          break
+                        elif ist[ii] == key:
+                          skipto180 = True
+                          goto190 = True
+                          break
+                        ii += 1
+                      if skipto180 == False:
+                        ii = ks + 1
+                        for itp in range(1, ipn ):
+                          if ist[ii] < 0:
+                            skipto180 = True
+                            goto190 = False
+                            break
+                          elif ist[ii] == key:
+                            skipto180 = True
+                            goto190 = True
+                            break
+                          ii += 1
+                      if goto190 == False:
+                        ist[ii] = key # Fortran line 180
+                        stv[ii] = v
+                        nst += 1
+                        ii = nst + ks
+                        itc[ii] = itp
+                        raise goto110
+                      stv[ii] = min(v, stv[ii]) # Fortran line 190
+                    raise goto110
                   except goto120:
                     continue
                   except break120:
@@ -950,6 +1374,170 @@ class TablesAnalysis:
       except break90:
         break
 
+  def f7xact(self, nrow, imax, idif, k, ks, iflag):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    class goto50(Exception): pass
+    class break50(Exception): pass
+    m = 0
+    k1 = 0
+    mm = 0
+    iflag[0] = 0
+    if ks[0] == 0:
+      while True: # Fortran line 10
+        ks[0] += 1
+        if idif[ks[0]] == imax[ks[0]]:
+          continue
+        break
+    if idif[k[0]] > 0 and k[0] > ks[0]:
+      idif[k[0]] = idif[k[0]] - 1
+      while True: # Fortran line 30
+        k[0] -= 1
+        if imax[k[0]] == 0:
+          continue
+        break
+      m = k[0]
+      while True: # Fortran line 40
+        if idif[m] >= imax[m]:
+          m -= 1
+          continue
+        break
+      idif[m] = idif[m] + 1
+      if m == ks[0]:
+        if idif[m] == imax[m]:
+          ks[0] = k[0]
+    else:
+      while True: # Fortran line 50
+        try:
+          while True: # Also for Fortran line 50
+            goto70bool = False
+            for k1 in range(k[0] + 1, nrow + 1):
+              if idif[k1] > 0:
+                goto70bool = True
+                break
+            if goto70bool:
+              break
+            iflag[0] = 1
+            return
+          mm = 1
+          for i in range(1, k[0] + 1):
+            mm += idif[i]
+            idif[i] = 0
+          k[0] = k1
+          while True: # Fortran line 90
+            k[0] -= 1
+            m = min(mm, imax[k[0]])
+            idif[k[0]] = m
+            mm -= m
+            if mm > 0 and k[0] != 1:
+              continue
+            if mm > 0:
+              if k1 != nrow:
+                k[0] = k1
+                raise goto50
+              iflag[0] = 1
+              return
+            break
+          idif[k1] = idif[k1] - 1
+          ks[0] = 0
+          while True: # Fortran line 100
+            ks[0] += 1
+            if ks[0] > k[0]:
+              return
+            if idif[ks[0]] >= imax[ks[0]]:
+              continue
+            return
+          raise break50
+        except goto50:
+          continue
+        except break50:
+          break
+
+  def f5xact(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          none
+    """
+    class goto50(Exception): pass
+    class break50(Exception): pass
+    ird = 1
+    ipn = 1
+    goto40bool = False
+    if ipsh:
+      goto30bool = False
+      ird = int(kval % ldkey) + 1
+      for itp[0] in range(ird, ldkey + 1):
+        if key[itp[0] + keyoffset - 1] == kval:
+          goto40bool = True
+          break
+        if key[itp[0] + keyoffset - 1] < 0:
+          goto30bool = True
+          break
+      if goto40bool == False and goto30bool == False:
+        for itp[0] in range(1, ird):
+          if key[itp[0] + keyoffset - 1] == kval:
+            goto40bool = True
+            break
+          if key[itp[0] + keyoffset - 1] < 0:
+            break
+      if goto40bool == False:
+        key[itp[0] + keyoffset - 1] = kval
+        itop[0] += 1
+        ipoin[itp[0] + ipoinoffset - 1] = itop[0]
+        npoin[itop[0] + npoinoffset - 1] = -1
+        nr[itop[0] + nroffset - 1] = -1
+        nl[itop[0] + nloffset - 1] = -1
+        stp[itop[0] + stpoffset - 1] = pastp
+        ifrq[itop[0] + ifrqoffset - 1] = ifreq
+        return
+    ipn = ipoin[itp[0] + ipoinoffset - 1]
+    test1 = pastp - tol
+    test2 = pastp + tol
+    while True: # Fortran line 50
+      if stp[ipn + stpoffset - 1] < test1:
+        ipn = nl[ipn + nloffset - 1]
+        if ipn > 0:
+          continue
+      elif stp[ipn + stpoffset - 1] > test2:
+        ipn = nr[ipn + nroffset - 1]
+        if ipn > 0:
+          continue
+      else:
+        ifrq[ipn + ifrqoffset - 1] = ifrq[ipn + ifrqoffset - 1] + ifreq
+        return
+      itop[0] += 1
+      ipn = ipoin[itp[0] + ipoinoffset - 1]
+      itmp = ipn
+      break
+    while True: # Fortran line 60
+      if stp[ipn + stpoffset - 1] < test1:
+        itmp = ipn
+        ipn = nl[ipn + nloffset - 1]
+        if ipn > 0:
+          continue
+        else:
+          nl[itmp + nloffset - 1] = itop[0]
+      elif stp[ipn + stpoffset - 1] > test2:
+        itmp = ipn
+        ipn = nr[ipn + nroffset - 1]
+        if ipn > 0:
+          continue
+        else:
+          nr[itmp + nroffset - 1] = itop[0]
+      break
+    npoin[itop[0] + npoinoffset - 1] = npoin[itmp + npoinoffset - 1]
+    npoin[itmp + npoinoffset - 1] = itop[0]
+    stp[itop[0] + stpoffset - 1] = pastp
+    ifrq[itop[0] + ifrqoffset - 1] = ifreq
+    nl[itop[0] + nloffset - 1] = -1
+    nr[itop[0] + nroffset - 1] = -1
+
   def f2xact(self, nrow, ncol, table, ldtabl, expect, percnt, emin, prt, pre, fact, ico, iro, kyy, idif, irn, key, ldkey, ipoin, ldstp, stp, ifrq, dlp, dsp, tm, key2, iwk, rwk):
     """ Supports the MxN table statistics
         Parameters:
@@ -961,20 +1549,24 @@ class TablesAnalysis:
     class break110(Exception): pass
     class goto130(Exception): pass
     class break130(Exception): pass
-    class goto310(Exception): pass
-    class break310(Exception): pass
     class goto150(Exception): pass
     class break150(Exception): pass
     class goto240(Exception): pass
     class break240(Exception): pass
-    f5itp = 0
+    class goto300(Exception): pass
+    class break300(Exception): pass
+    class goto310(Exception): pass
+    class break310(Exception): pass
+    preadditioncounter = 0
+    goto110counter = 0
+    f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
       key2[i] = -9999
     preops = 0
     ncell = 0
     ifault = 1
-    iflag = 1
+    iflag = [1]
     tmp = 0.0
     pv = 0.0
     df = 0.0
@@ -982,7 +1574,7 @@ class TablesAnalysis:
     obs3 = 0.0
     chisq = False
     pre[0] = 0.0
-    itop = 0
+    itop = [0]
     emn = 0.0
     emx = 1.0e30
     tol = 3.45254e-7
@@ -1035,7 +1627,7 @@ class TablesAnalysis:
       for r in range(1, nrow + 1):
         ico[c] += table[r][c]
     rico = [0] * (ncol + 1)
-    for c in range(1, nrow + 1):
+    for c in range(1, ncol + 1):
       rico[c] = ico[c]
     ico = rico
     iro.sort()
@@ -1073,7 +1665,7 @@ class TablesAnalysis:
     prt[0] = math.exp(obs - dro)
     # Initialize pointers
     k = nco
-    last = ldkey + 1
+    last = [ldkey + 1]
     jkey = ldkey + 1
     jstp = ldstp + 1
     jstp2 = 3 * ldstp + 1
@@ -1082,29 +1674,30 @@ class TablesAnalysis:
     ikkey = 0
     ikstp = 0
     ikstp2 = 2 * ldstp
-    ipo = 1
+    ipo = [1]
     ipoin[1] = 1
     stp[1] = 0.0
     ifrq[1] = 1
     ifrq[ikstp2 + 1] = -1
     while True: # Fortran line 110
       try:
+        goto110counter += 1
         kb = nco - k + 1
-        ks = 0
+        ks = [0]
         n = ico[kb] #Ends up being the lowest column total
-        kd = nro + 1;
+        kd = [nro + 1]
         kmax = nro
         for i in range(1, nro + 1):
           idif[i] = 0
         while True: # Fortran line 130
           try:
-            kd = kd - 1 # So kd is now highest index of row totals vector
-            ntot[0] = min(n, iro[kd]) # The lowest column total or the highest row total??
-            idif[kd] = ntot[0]
+            kd[0] -= 1 # So kd is now highest index of row totals vector
+            ntot[0] = min(n, iro[kd[0]]) # The lowest column total or the highest row total??
+            idif[kd[0]] = ntot[0]
             if idif[kmax] == 0:
               kmax -= 1
             n -= ntot[0]
-            if n > 0 and kd != 1:
+            if n > 0 and kd[0] != 1:
               raise goto130
             k1 = 0
             if n != 0:
@@ -1114,7 +1707,7 @@ class TablesAnalysis:
                   self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
                   if iflag[0] == 3:
                     k = k - 1
-                    itop = 0
+                    itop[0] = 0
                     ikkey = jkey - 1
                     ikstp = jstp - 1
                     ikstp2 = jstp2 - 1
@@ -1205,7 +1798,7 @@ class TablesAnalysis:
                     kval += irn[i] * kyy[i]
                   i = kval % (2 * ldkey) + 1
                   bool240 = False
-                  for itp in range(i, 3):
+                  for itp in range(i, 2 * ldkey + 1):
                     ii = key2[itp]
                     if ii == kval:
                       bool240 = True
@@ -1230,7 +1823,7 @@ class TablesAnalysis:
                 while True: # Fortran line 240
                   try:
                     ipsh = True
-                    ipn = ipoin[ipo + ikkey]
+                    ipn = ipoin[ipo[0] + ikkey]
                     pastp = stp[ipn + ikstp]
                     ifreq = ifrq[ipn + ikstp]
                     if k1 > 1:
@@ -1264,10 +1857,100 @@ class TablesAnalysis:
                         for rwki in rwk:
                           rwk0.append(rwki)
                           rwk1.append(rwki)
-                        dlpitp = dlp[itp]
+                        dlpitp = [dlp[itp]]
                         self.f3xact(nro2, irn, nrb, k1, ico, kb + 1, dlpitp, ntot, fact, iwk0, iwk1, iwk2, iwk3, iwk4, iwk5, iwk6, iwk7, iwk8, rwk0, rwk1, tol)
+                        dlp[itp] = dlpitp[0]
+                        dlp[itp] = min(0.0, dlp[itp])
+                        dsp[itp] = dspt
+                        dspitp = [dsp[itp]]
+                        self.f4xact(nro2, irn, nrb, k1, ico, kb + 1, dspitp, fact, iwk0, iwk1, iwk2, iwk3, iwk4, iwk5, iwk6, rwk0, tol)
+                        dsp[itp] = dspitp[0]
+                        dsp[itp] = min(0.0, dsp[itp] - dspt)
+                        # Use chi-squared approximation
+                        if float((irn[nrb] * ico[kb + 1]) / float(ntot[0])) > emn:
+                          ncell = 0
+                          for j in range(1, nro2 + 1):
+                            for l in range(1, k1 + 1):
+                              if irn[nrb + j - 1] * ico[kb + l] >= ntot[0] * expect:
+                                ncell += 1
+                          if ncell * 100 >= k1 * nro2 * percnt:
+                            tmp = 0.0
+                            for j in range(1, nro2 + 1):
+                              tmp += fact[irn[nrb + j - 1]] - fact[irn[nrb + j - 1] - 1]
+                            tmp *= (k1 - 1)
+                            for j in range(1, k1 + 1):
+                              tmp += (nro2 - 1) * (fact[ico[kb + j]] - fact[ico[kb + j] - 1])
+                            df = (nro2 - 1) * (k1 - 1)
+                            tmp = tmp + df * 1.83787706640934548356065947281
+                            tmp = tmp - (nro2 * k1 - 1) * (fact[ntot[0]] - fact[ntot[0] - 1])
+                            tm[itp] = -2.0 * (obs - dro) - tmp
+                          else:
+                            tm[itp] = -9876.0
+                        else:
+                          tm[itp] = -9876.0
                       obs3 = obs2 - dlp[itp]
                       obs2 -= dsp[itp]
+                      if tm[itp] == -9876.0:
+                        chisq = False
+                      else:
+                        chisq = True
+                        tmp = tm[itp]
+                    else:
+                      obs2 = obs - drn - dro
+                      obs3 = obs2
+                    while True: # Fortran line 300
+                      try:
+                        if pastp <= obs3:
+                          pre[0] += ifreq * math.exp(pastp + drn)
+                          preadditioncounter += 1
+                          preops += 1
+                          if preops == 106 or preops == 13:
+                            checkpoint = True
+                        elif pastp < obs2:
+                          if chisq:
+                            df = (nro2 - 1) * (k1 - 1)
+                            pv = self.gamds(max(0.0, tmp + 2.0 * (pastp + drn)) / 2.0, df / 2.0, ifault)
+                            pre[0] += ifreq * math.exp(pastp + drn) * pv
+                          else:
+                            self.f5xact(pastp + ddf, tol, kval, key, jkey, ldkey, ipoin, jkey, stp, jstp, ldstp, ifrq, jstp, ifrq, jstp2, ifrq, jstp3, ifrq, jstp4, ifreq, itop, ipsh, f5itp)
+                            ipsh = False
+                        ipn = ifrq[ipn + ikstp2]
+                        if ipn > 0:
+                          pastp = stp[ipn + ikstp]
+                          ifreq = ifrq[ipn + ikstp]
+                          raise goto300
+                        self.f7xact(kmax, iro, idif, kd, ks, iflag)
+                        if iflag[0] != 1:
+                          raise goto150
+                        while True: # Fortran line 310
+                          try:
+                            iflag[0] = 1
+                            self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                            if iflag[0] == 3:
+                              k -= 1
+                              itop[0] = 0
+                              ikkey = jkey - 1
+                              ikstp = jstp - 1
+                              ikstp2 = jstp2 - 1
+                              jkey = ldkey - jkey + 2
+                              jstp = ldstp - jstp + 2
+                              jstp2 = 2 * ldstp + jstp
+                              for f in range(1, 2 * ldkey + 1):
+                                key2[f] = -9999
+                              if k >= 2:
+                                raise goto310
+                            else:
+                              raise goto110
+                            raise break310
+                          except goto310:
+                            continue
+                          except break310:
+                              break
+                        raise break300
+                      except goto300:
+                        continue
+                      except break300:
+                          break
                     raise break110
                   except goto240:
                     continue
