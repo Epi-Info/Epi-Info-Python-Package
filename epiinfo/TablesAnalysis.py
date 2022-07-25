@@ -1557,8 +1557,6 @@ class TablesAnalysis:
     class break300(Exception): pass
     class goto310(Exception): pass
     class break310(Exception): pass
-    preadditioncounter = 0
-    goto110counter = 0
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1681,7 +1679,6 @@ class TablesAnalysis:
     ifrq[ikstp2 + 1] = -1
     while True: # Fortran line 110
       try:
-        goto110counter += 1
         kb = nco - k + 1
         ks = [0]
         n = ico[kb] #Ends up being the lowest column total
@@ -1902,7 +1899,6 @@ class TablesAnalysis:
                       try:
                         if pastp <= obs3:
                           pre[0] += ifreq * math.exp(pastp + drn)
-                          preadditioncounter += 1
                           preops += 1
                           if preops == 106 or preops == 13:
                             checkpoint = True
