@@ -1368,8 +1368,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class goto50(Exception): pass
-    class break50(Exception): pass
     m = 0
     k1 = 0
     mm = 0
@@ -1399,50 +1397,49 @@ class TablesAnalysis:
           ks[0] = k[0]
     else:
       while True: # Fortran line 50
-        try:
-          while True: # Also for Fortran line 50
-            goto70bool = False
-            for k1 in range(k[0] + 1, nrow + 1):
-              if idif[k1] > 0:
-                goto70bool = True
-                break
-            if goto70bool:
+        goto50bool = False
+        while True: # Also for Fortran line 50
+          goto70bool = False
+          for k1 in range(k[0] + 1, nrow + 1):
+            if idif[k1] > 0:
+              goto70bool = True
+              break
+          if goto70bool:
+            break
+          iflag[0] = 1
+          return
+        mm = 1
+        for i in range(1, k[0] + 1):
+          mm += idif[i]
+          idif[i] = 0
+        k[0] = k1
+        while True: # Fortran line 90
+          k[0] -= 1
+          m = min(mm, imax[k[0]])
+          idif[k[0]] = m
+          mm -= m
+          if mm > 0 and k[0] != 1:
+            continue
+          if mm > 0:
+            if k1 != nrow:
+              k[0] = k1
+              goto50bool = True
               break
             iflag[0] = 1
             return
-          mm = 1
-          for i in range(1, k[0] + 1):
-            mm += idif[i]
-            idif[i] = 0
-          k[0] = k1
-          while True: # Fortran line 90
-            k[0] -= 1
-            m = min(mm, imax[k[0]])
-            idif[k[0]] = m
-            mm -= m
-            if mm > 0 and k[0] != 1:
-              continue
-            if mm > 0:
-              if k1 != nrow:
-                k[0] = k1
-                raise goto50
-              iflag[0] = 1
-              return
-            break
-          idif[k1] = idif[k1] - 1
-          ks[0] = 0
-          while True: # Fortran line 100
-            ks[0] += 1
-            if ks[0] > k[0]:
-              return
-            if idif[ks[0]] >= imax[ks[0]]:
-              continue
-            return
-          raise break50
-        except goto50:
-          continue
-        except break50:
           break
+        if goto50bool:
+          continue
+        idif[k1] = idif[k1] - 1
+        ks[0] = 0
+        while True: # Fortran line 100
+          ks[0] += 1
+          if ks[0] > k[0]:
+            return
+          if idif[ks[0]] >= imax[ks[0]]:
+            continue
+          return
+        break
 
   def f5xact(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp):
     """ Supports the MxN table statistics
@@ -1451,8 +1448,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class goto50(Exception): pass
-    class break50(Exception): pass
     ird = 1
     ipn = 1
     goto40bool = False
