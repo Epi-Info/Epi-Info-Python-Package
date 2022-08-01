@@ -1056,8 +1056,6 @@ class TablesAnalysis:
     """
     class goto90(Exception): pass
     class break90(Exception): pass
-    class goto100(Exception): pass
-    class break100(Exception): pass
     n11 = 0
     n12 = 0
     nro = 0
@@ -1176,7 +1174,7 @@ class TablesAnalysis:
               dlp[0] -= vmn
               return
         while True: # Fortran line 100
-          try:
+          if True:
             lev = 1
             nr1 = nro - 1
             nrt = iro[irl]
@@ -1328,10 +1326,6 @@ class TablesAnalysis:
                 if goto110bool:
                   continue
                 break
-            raise break100
-          except goto100:
-            continue
-          except break100:
             break
         raise break90
       except goto90:
