@@ -1060,8 +1060,6 @@ class TablesAnalysis:
     class break100(Exception): pass
     class goto110(Exception): pass
     class break110(Exception): pass
-    class goto120(Exception): pass
-    class break120(Exception): pass
     n11 = 0
     n12 = 0
     nro = 0
@@ -1226,7 +1224,7 @@ class TablesAnalysis:
                 lb[lev] += 1
                 nr[lev] -= 1
                 while True: # Fortran line 120
-                  try:
+                  if True:
                     alen[lev] = alen[lev - 1] + fact[lb[lev]]
                     if lev < nc1s:
                       nn1 = int(nt[lev])
@@ -1237,7 +1235,7 @@ class TablesAnalysis:
                       lb[lev] = int(float((nrt + 1) * (nct + 1)) / float(nn1 + nr1 * nc1 + 1) - tol)
                       nu[lev] = int(float((nrt + nc1) * (nct + nr1)) / float(nn1 + nr1 + nc1) - lb[lev] + 1)
                       nr[lev] = nrt - lb[lev]
-                      raise goto120
+                      continue
                     alen[nco] = alen[lev] + fact[nr[lev]]
                     lb[nco] = nr[lev]
                     v = val[0] + alen[nco]
@@ -1326,10 +1324,6 @@ class TablesAnalysis:
                         raise goto110
                       stv[ii] = min(v, stv[ii]) # Fortran line 190
                     raise goto110
-                  except goto120:
-                    continue
-                  except break120:
-                    break
                 raise break110
               except goto110:
                 continue
