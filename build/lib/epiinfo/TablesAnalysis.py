@@ -1505,10 +1505,6 @@ class TablesAnalysis:
     """
     class goto110(Exception): pass
     class break110(Exception): pass
-    class goto130(Exception): pass
-    class break130(Exception): pass
-    class goto150(Exception): pass
-    class break150(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1639,7 +1635,7 @@ class TablesAnalysis:
         for i in range(1, nro + 1):
           idif[i] = 0
         while True: # Fortran line 130
-          try:
+          if True:
             kd[0] -= 1 # So kd is now highest index of row totals vector
             ntot[0] = min(n, iro[kd[0]]) # The lowest column total or the highest row total??
             idif[kd[0]] = ntot[0]
@@ -1647,7 +1643,7 @@ class TablesAnalysis:
               kmax -= 1
             n -= ntot[0]
             if n > 0 and kd[0] != 1:
-              raise goto130
+              continue
             k1 = 0
             if n != 0:
               while True: # Fortran line 310
@@ -1893,10 +1889,6 @@ class TablesAnalysis:
                   continue
                 raise break110
             raise break110
-          except goto130:
-            continue
-          except break130:
-            break
         raise break110
       except goto110:
         continue
