@@ -1503,7 +1503,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class goto110(Exception): pass
     class break110(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
@@ -1627,6 +1626,7 @@ class TablesAnalysis:
     ifrq[ikstp2 + 1] = -1
     while True: # Fortran line 110
       try:
+        goto110bool = False
         kb = nco - k + 1
         ks = [0]
         n = ico[kb] #Ends up being the lowest column total
@@ -1664,7 +1664,10 @@ class TablesAnalysis:
                     continue
                   return
                 else:
-                  raise goto110
+                  goto110bool = True
+                  break
+              if goto110bool:
+                break
             k1 = k - 1
             n = ico[kb]
             ntot[0] = 0
@@ -1879,19 +1882,28 @@ class TablesAnalysis:
                           if k >= 2:
                             continue
                         else:
-                          raise goto110
+                          goto110bool = True
+                          break
                         break
                       break
+                      if goto110bool:
+                        break
                     if goto150bool:
+                      break
+                    if goto110bool:
                       break
                     raise break110
                 if goto150bool:
                   continue
+                if goto110bool:
+                  break
                 raise break110
+            if goto110bool:
+              break
             raise break110
+        if goto110bool:
+          continue
         raise break110
-      except goto110:
-        continue
       except break110:
         break
 
