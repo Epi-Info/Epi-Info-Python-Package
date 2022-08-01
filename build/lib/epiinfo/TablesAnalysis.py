@@ -1503,7 +1503,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class break110(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1625,7 +1624,7 @@ class TablesAnalysis:
     ifrq[1] = 1
     ifrq[ikstp2 + 1] = -1
     while True: # Fortran line 110
-      try:
+      if True:
         goto110bool = False
         kb = nco - k + 1
         ks = [0]
@@ -1892,19 +1891,17 @@ class TablesAnalysis:
                       break
                     if goto110bool:
                       break
-                    raise break110
+                    break
                 if goto150bool:
                   continue
                 if goto110bool:
                   break
-                raise break110
+                break
             if goto110bool:
               break
-            raise break110
+            break
         if goto110bool:
           continue
-        raise break110
-      except break110:
         break
 
   def FEXACT(self, SortedRows):
