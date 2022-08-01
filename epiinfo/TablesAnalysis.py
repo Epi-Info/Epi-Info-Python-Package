@@ -848,10 +848,6 @@ class TablesAnalysis:
     class break50(Exception): pass
     class goto60(Exception): pass
     class break60(Exception): pass
-    class goto100(Exception): pass
-    class break100(Exception): pass
-    class goto110(Exception): pass
-    class break110(Exception): pass
     i = 1
     j = 1
     irstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
@@ -1018,39 +1014,33 @@ class TablesAnalysis:
                 dsp[0] = 0.0
                 return
             while True: # Fortran line 100
-              try:
-                istk -= 1
-                if istk == 0:
-                  dsp[0] -= amx
-                  if dsp[0] - amx <= tol:
-                    dsp[0] = 0.0
-                  return
-                l = int(lstk[istk] + 1)
-                while True: # Fortran line 110
-                  try:
-                    if l > mstk[istk]:
-                      raise goto100
-                    n = nstk[istk]
-                    nro = nrstk[istk]
-                    nco = ncstk[istk]
-                    y = ystk[istk]
-                    if n == 1:
-                      if irstk[istk][l] < irstk[istk][l - 1]:
-                        raise goto60
-                    elif n == 2:
-                      if icstk[istk][l] < icstk[istk][l - 1]:
-                        raise goto60
-                    l += 1
-                    raise goto110
-                  except goto110:
-                    continue
-                  except break110:
-                    break
-                raise break100
-              except goto100:
+              goto100bool = False
+              istk -= 1
+              if istk == 0:
+                dsp[0] -= amx
+                if dsp[0] - amx <= tol:
+                  dsp[0] = 0.0
+                return
+              l = int(lstk[istk] + 1)
+              while True: # Fortran line 110
+                if l > mstk[istk]:
+                  goto100bool = True
+                  break
+                n = nstk[istk]
+                nro = nrstk[istk]
+                nco = ncstk[istk]
+                y = ystk[istk]
+                if n == 1:
+                  if irstk[istk][l] < irstk[istk][l - 1]:
+                    raise goto60
+                elif n == 2:
+                  if icstk[istk][l] < icstk[istk][l - 1]:
+                    raise goto60
+                l += 1
                 continue
-              except break100:
-                break
+              if goto100bool:
+                continue
+              break
             raise break60
           except goto60:
             continue
