@@ -714,8 +714,6 @@ class TablesAnalysis:
         Returns:
           float
     """
-    class goto10(Exception): pass
-    class break10(Exception): pass
     alogam = 0.0
     a1 = 0.918938533204673
     a2 = 0.00595238095238
@@ -1064,8 +1062,6 @@ class TablesAnalysis:
     class break110(Exception): pass
     class goto120(Exception): pass
     class break120(Exception): pass
-    class goto200(Exception): pass
-    class break200(Exception): pass
     n11 = 0
     n12 = 0
     nro = 0
@@ -1156,38 +1152,33 @@ class TablesAnalysis:
             if val[0] < vmn:
               vmn = val[0]
             while True: # Fortran line 200
-              try:
-                if nitc > 0:
-                  itp = itc[nitc + k] + k
-                  nitc -= 1
-                  val[0] = stv[itp]
-                  key = int(ist[itp])
-                  ist[itp] = -1
-                  i = nco
-                  while i >= 2:
-                    ico[i] = key % kyy
-                    key = int(key / kyy)
-                    i -= 1
-                  ico[i] = key
-                  nt[i] = nn - ico[1]
-                  for i in range(2, nco + 1):
-                    nt[i] = nt[i - 1] - ico[i]
-                  raise goto90
-                elif nro > 2 and nst > 0:
-                  nitc = nst
-                  nst = 0
-                  k = ks
-                  ks = ldst - ks
-                  nn -= iro[irl]
-                  irl += 1
-                  nro -= 1
-                  raise goto200
-                dlp[0] -= vmn
-                return
-              except goto200:
+              if nitc > 0:
+                itp = itc[nitc + k] + k
+                nitc -= 1
+                val[0] = stv[itp]
+                key = int(ist[itp])
+                ist[itp] = -1
+                i = nco
+                while i >= 2:
+                  ico[i] = key % kyy
+                  key = int(key / kyy)
+                  i -= 1
+                ico[i] = key
+                nt[i] = nn - ico[1]
+                for i in range(2, nco + 1):
+                  nt[i] = nt[i - 1] - ico[i]
+                raise goto90
+              elif nro > 2 and nst > 0:
+                nitc = nst
+                nst = 0
+                k = ks
+                ks = ldst - ks
+                nn -= iro[irl]
+                irl += 1
+                nro -= 1
                 continue
-              except break200:
-                break
+              dlp[0] -= vmn
+              return
         while True: # Fortran line 100
           try:
             lev = 1
@@ -1203,38 +1194,33 @@ class TablesAnalysis:
                 if nu[lev] == 0:
                   if lev == 1:
                     while True: # Fortran line 200
-                      try:
-                        if nitc > 0:
-                          itp = itc[nitc + k] + k
-                          nitc -= 1
-                          val[0] = stv[itp]
-                          key = int(ist[itp])
-                          ist[itp] = -1
-                          i = nco
-                          while i >= 2:
-                            ico[i] = key % kyy
-                            key = int(key / kyy)
-                            i -= 1
-                          ico[i] = key
-                          nt[i] = nn - ico[1]
-                          for i in range(2, nco + 1):
-                            nt[i] = nt[i - 1] - ico[i]
-                          raise goto90
-                        elif nro > 2 and nst > 0:
-                          nitc = nst
-                          nst = 0
-                          k = ks
-                          ks = ldst - ks
-                          nn -= iro[irl]
-                          irl += 1
-                          nro -= 1
-                          raise goto200
-                        dlp[0] -= vmn
-                        return
-                      except goto200:
+                      if nitc > 0:
+                        itp = itc[nitc + k] + k
+                        nitc -= 1
+                        val[0] = stv[itp]
+                        key = int(ist[itp])
+                        ist[itp] = -1
+                        i = nco
+                        while i >= 2:
+                          ico[i] = key % kyy
+                          key = int(key / kyy)
+                          i -= 1
+                        ico[i] = key
+                        nt[i] = nn - ico[1]
+                        for i in range(2, nco + 1):
+                          nt[i] = nt[i - 1] - ico[i]
+                        raise goto90
+                      elif nro > 2 and nst > 0:
+                        nitc = nst
+                        nst = 0
+                        k = ks
+                        ks = ldst - ks
+                        nn -= iro[irl]
+                        irl += 1
+                        nro -= 1
                         continue
-                      except break200:
-                        break
+                      dlp[0] -= vmn
+                      return
                   lev -= 1
                   raise goro110
                 lb[lev] += 1
