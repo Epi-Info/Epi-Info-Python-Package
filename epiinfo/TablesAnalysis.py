@@ -1054,8 +1054,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class goto90(Exception): pass
-    class break90(Exception): pass
     n11 = 0
     n12 = 0
     nro = 0
@@ -1134,7 +1132,8 @@ class TablesAnalysis:
     kyy = ico[nco] + 1
     bool90 = False # to goto 100
     while True: # Fortran line 90
-      try:
+      if True:
+        goto90bool = False
         if bool90:
           xmin = [False]
           if iro[nro - 1] <= iro[irl - 1] + nco:
@@ -1161,7 +1160,8 @@ class TablesAnalysis:
                 nt[i] = nn - ico[1]
                 for i in range(2, nco + 1):
                   nt[i] = nt[i - 1] - ico[i]
-                raise goto90
+                goto90bool = True
+                break
               elif nro > 2 and nst > 0:
                 nitc = nst
                 nst = 0
@@ -1173,6 +1173,8 @@ class TablesAnalysis:
                 continue
               dlp[0] -= vmn
               return
+        if goto90bool:
+          continue
         while True: # Fortran line 100
           if True:
             lev = 1
@@ -1204,7 +1206,8 @@ class TablesAnalysis:
                         nt[i] = nn - ico[1]
                         for i in range(2, nco + 1):
                           nt[i] = nt[i - 1] - ico[i]
-                        raise goto90
+                        goto90bool = True
+                        break
                       elif nro > 2 and nst > 0:
                         nitc = nst
                         nst = 0
@@ -1216,8 +1219,10 @@ class TablesAnalysis:
                         continue
                       dlp[0] -= vmn
                       return
+                    if goto90bool:
+                      break
                   lev -= 1
-                  raise goro110
+                  continue
                 lb[lev] += 1
                 nr[lev] -= 1
                 while True: # Fortran line 120
@@ -1327,11 +1332,9 @@ class TablesAnalysis:
                   continue
                 break
             break
-        raise break90
-      except goto90:
-        bool90 = True
-        continue
-      except break90:
+        if goto90bool:
+          bool90 = True
+          continue
         break
 
   def f7xact(self, nrow, imax, idif, k, ks, iflag):
