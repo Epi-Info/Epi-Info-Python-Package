@@ -844,8 +844,6 @@ class TablesAnalysis:
         Returns:
           none
     """
-    class goto50(Exception): pass
-    class break50(Exception): pass
     i = 1
     j = 1
     irstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
@@ -878,7 +876,8 @@ class TablesAnalysis:
     l = 1
     amx = 0.0
     while True: # Fortran line 50
-      try:
+      if True:
+        goto50bool = False
         ir1 = irstk[istk][1]
         ic1 = icstk[istk][1]
         m = 0
@@ -1006,7 +1005,8 @@ class TablesAnalysis:
               ncstk[istk] = nco
               ystk[istk] = y
               l = 1
-              raise goto50
+              goto50bool = True
+              break
             if y >  amx:
               amx = y
               if dsp[0] - amx <= tol:
@@ -1045,10 +1045,8 @@ class TablesAnalysis:
             if goto60bool:
               continue
             break
-        raise break50
-      except goto50:
-        continue
-      except break50:
+        if goto50bool:
+          continue
         break
 
   def f3xact(self, nrow, irow, irowoffset, ncol, icol, icoloffset, dlp, mm, fact, ico, iro, it, lb, nr, nt, nu, itc, ist, stv, alen, tol):
