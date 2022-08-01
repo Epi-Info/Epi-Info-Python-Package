@@ -1509,8 +1509,6 @@ class TablesAnalysis:
     class break130(Exception): pass
     class goto150(Exception): pass
     class break150(Exception): pass
-    class goto240(Exception): pass
-    class break240(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1678,7 +1676,8 @@ class TablesAnalysis:
             for i in range(kb + 1, nco + 1):
               ntot[0] += ico[i]
             while True: # Fortran line 150
-              try:
+              if True:
+                goto150bool = False
                 for i in range(1, nro + 1):
                   irn[i] = iro[i] - idif[i]
                 nrb = 0;
@@ -1767,7 +1766,7 @@ class TablesAnalysis:
                         bool240 = True
                         break
                 while True: # Fortran line 240
-                  try:
+                  if True:
                     ipsh = True
                     ipn = ipoin[ipo[0] + ikkey]
                     pastp = stp[ipn + ikstp]
@@ -1865,7 +1864,8 @@ class TablesAnalysis:
                         continue
                       self.f7xact(kmax, iro, idif, kd, ks, iflag)
                       if iflag[0] != 1:
-                        raise goto150
+                        goto150bool = True
+                        break
                       while True: # Fortran line 310
                         iflag[0] = 1
                         self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
@@ -1886,16 +1886,12 @@ class TablesAnalysis:
                           raise goto110
                         break
                       break
-                    raise break110
-                  except goto240:
-                    continue
-                  except break240:
+                    if goto150bool:
                       break
+                    raise break110
+                if goto150bool:
+                  continue
                 raise break110
-              except goto150:
-                continue
-              except break150:
-                  break
             raise break110
           except goto130:
             continue
