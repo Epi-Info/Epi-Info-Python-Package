@@ -1555,8 +1555,6 @@ class TablesAnalysis:
     class break240(Exception): pass
     class goto300(Exception): pass
     class break300(Exception): pass
-    class goto310(Exception): pass
-    class break310(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1699,29 +1697,24 @@ class TablesAnalysis:
             k1 = 0
             if n != 0:
               while True: # Fortran line 310
-                try:
-                  iflag = [1]
-                  self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
-                  if iflag[0] == 3:
-                    k = k - 1
-                    itop[0] = 0
-                    ikkey = jkey - 1
-                    ikstp = jstp - 1
-                    ikstp2 = jstp2 - 1
-                    jkey = ldkey - jkey + 2
-                    jstp = ldstp - jstp + 2
-                    jstp2 = 2 * ldstp + jstp
-                    for f in range(1,  2 * ldkey + 1):
-                      key2[f] = -9999
-                    if k >= 2:
-                      raise goto310
-                    return
-                  else:
-                    raise goto110
-                except goto310:
-                  continue
-                except break310:
-                  break
+                iflag = [1]
+                self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                if iflag[0] == 3:
+                  k = k - 1
+                  itop[0] = 0
+                  ikkey = jkey - 1
+                  ikstp = jstp - 1
+                  ikstp2 = jstp2 - 1
+                  jkey = ldkey - jkey + 2
+                  jstp = ldstp - jstp + 2
+                  jstp2 = 2 * ldstp + jstp
+                  for f in range(1,  2 * ldkey + 1):
+                    key2[f] = -9999
+                  if k >= 2:
+                    continue
+                  return
+                else:
+                  raise goto110
             k1 = k - 1
             n = ico[kb]
             ntot[0] = 0
@@ -1919,29 +1912,24 @@ class TablesAnalysis:
                         if iflag[0] != 1:
                           raise goto150
                         while True: # Fortran line 310
-                          try:
-                            iflag[0] = 1
-                            self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
-                            if iflag[0] == 3:
-                              k -= 1
-                              itop[0] = 0
-                              ikkey = jkey - 1
-                              ikstp = jstp - 1
-                              ikstp2 = jstp2 - 1
-                              jkey = ldkey - jkey + 2
-                              jstp = ldstp - jstp + 2
-                              jstp2 = 2 * ldstp + jstp
-                              for f in range(1, 2 * ldkey + 1):
-                                key2[f] = -9999
-                              if k >= 2:
-                                raise goto310
-                            else:
-                              raise goto110
-                            raise break310
-                          except goto310:
-                            continue
-                          except break310:
-                              break
+                          iflag[0] = 1
+                          self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                          if iflag[0] == 3:
+                            k -= 1
+                            itop[0] = 0
+                            ikkey = jkey - 1
+                            ikstp = jstp - 1
+                            ikstp2 = jstp2 - 1
+                            jkey = ldkey - jkey + 2
+                            jstp = ldstp - jstp + 2
+                            jstp2 = 2 * ldstp + jstp
+                            for f in range(1, 2 * ldkey + 1):
+                              key2[f] = -9999
+                            if k >= 2:
+                              continue
+                          else:
+                            raise goto110
+                          break
                         raise break300
                       except goto300:
                         continue
