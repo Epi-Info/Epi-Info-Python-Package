@@ -1511,8 +1511,6 @@ class TablesAnalysis:
     class break150(Exception): pass
     class goto240(Exception): pass
     class break240(Exception): pass
-    class goto300(Exception): pass
-    class break300(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1847,52 +1845,47 @@ class TablesAnalysis:
                       obs2 = obs - drn - dro
                       obs3 = obs2
                     while True: # Fortran line 300
-                      try:
-                        if pastp <= obs3:
-                          pre[0] += ifreq * math.exp(pastp + drn)
-                          preops += 1
-                          if preops == 106 or preops == 13:
-                            checkpoint = True
-                        elif pastp < obs2:
-                          if chisq:
-                            df = (nro2 - 1) * (k1 - 1)
-                            pv = self.gamds(max(0.0, tmp + 2.0 * (pastp + drn)) / 2.0, df / 2.0, ifault)
-                            pre[0] += ifreq * math.exp(pastp + drn) * pv
-                          else:
-                            self.f5xact(pastp + ddf, tol, kval, key, jkey, ldkey, ipoin, jkey, stp, jstp, ldstp, ifrq, jstp, ifrq, jstp2, ifrq, jstp3, ifrq, jstp4, ifreq, itop, ipsh, f5itp)
-                            ipsh = False
-                        ipn = ifrq[ipn + ikstp2]
-                        if ipn > 0:
-                          pastp = stp[ipn + ikstp]
-                          ifreq = ifrq[ipn + ikstp]
-                          raise goto300
-                        self.f7xact(kmax, iro, idif, kd, ks, iflag)
-                        if iflag[0] != 1:
-                          raise goto150
-                        while True: # Fortran line 310
-                          iflag[0] = 1
-                          self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
-                          if iflag[0] == 3:
-                            k -= 1
-                            itop[0] = 0
-                            ikkey = jkey - 1
-                            ikstp = jstp - 1
-                            ikstp2 = jstp2 - 1
-                            jkey = ldkey - jkey + 2
-                            jstp = ldstp - jstp + 2
-                            jstp2 = 2 * ldstp + jstp
-                            for f in range(1, 2 * ldkey + 1):
-                              key2[f] = -9999
-                            if k >= 2:
-                              continue
-                          else:
-                            raise goto110
-                          break
-                        raise break300
-                      except goto300:
+                      if pastp <= obs3:
+                        pre[0] += ifreq * math.exp(pastp + drn)
+                        preops += 1
+                        if preops == 106 or preops == 13:
+                          checkpoint = True
+                      elif pastp < obs2:
+                        if chisq:
+                          df = (nro2 - 1) * (k1 - 1)
+                          pv = self.gamds(max(0.0, tmp + 2.0 * (pastp + drn)) / 2.0, df / 2.0, ifault)
+                          pre[0] += ifreq * math.exp(pastp + drn) * pv
+                        else:
+                          self.f5xact(pastp + ddf, tol, kval, key, jkey, ldkey, ipoin, jkey, stp, jstp, ldstp, ifrq, jstp, ifrq, jstp2, ifrq, jstp3, ifrq, jstp4, ifreq, itop, ipsh, f5itp)
+                          ipsh = False
+                      ipn = ifrq[ipn + ikstp2]
+                      if ipn > 0:
+                        pastp = stp[ipn + ikstp]
+                        ifreq = ifrq[ipn + ikstp]
                         continue
-                      except break300:
-                          break
+                      self.f7xact(kmax, iro, idif, kd, ks, iflag)
+                      if iflag[0] != 1:
+                        raise goto150
+                      while True: # Fortran line 310
+                        iflag[0] = 1
+                        self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                        if iflag[0] == 3:
+                          k -= 1
+                          itop[0] = 0
+                          ikkey = jkey - 1
+                          ikstp = jstp - 1
+                          ikstp2 = jstp2 - 1
+                          jkey = ldkey - jkey + 2
+                          jstp = ldstp - jstp + 2
+                          jstp2 = 2 * ldstp + jstp
+                          for f in range(1, 2 * ldkey + 1):
+                            key2[f] = -9999
+                          if k >= 2:
+                            continue
+                        else:
+                          raise goto110
+                        break
+                      break
                     raise break110
                   except goto240:
                     continue
