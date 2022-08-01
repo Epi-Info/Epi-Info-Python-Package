@@ -846,8 +846,6 @@ class TablesAnalysis:
     """
     class goto50(Exception): pass
     class break50(Exception): pass
-    class goto60(Exception): pass
-    class break60(Exception): pass
     i = 1
     j = 1
     irstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
@@ -909,7 +907,8 @@ class TablesAnalysis:
             m = nco - 1
             n = 2
         while True: # Fortran line 60
-          try:
+          if True:
+            goto60bool = False
             if n == 1:
               i = l
               j = 1
@@ -1032,19 +1031,19 @@ class TablesAnalysis:
                 y = ystk[istk]
                 if n == 1:
                   if irstk[istk][l] < irstk[istk][l - 1]:
-                    raise goto60
+                    goto60bool = True
+                    break
                 elif n == 2:
                   if icstk[istk][l] < icstk[istk][l - 1]:
-                    raise goto60
+                    goto60bool = True
+                    break
                 l += 1
                 continue
               if goto100bool:
                 continue
               break
-            raise break60
-          except goto60:
-            continue
-          except break60:
+            if goto60bool:
+              continue
             break
         raise break50
       except goto50:
