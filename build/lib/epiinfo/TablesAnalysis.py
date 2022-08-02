@@ -714,6 +714,8 @@ class TablesAnalysis:
         Returns:
           float
     """
+    class goto10(Exception): pass
+    class break10(Exception): pass
     alogam = 0.0
     a1 = 0.918938533204673
     a2 = 0.00595238095238
@@ -842,6 +844,14 @@ class TablesAnalysis:
         Returns:
           none
     """
+    class goto50(Exception): pass
+    class break50(Exception): pass
+    class goto60(Exception): pass
+    class break60(Exception): pass
+    class goto100(Exception): pass
+    class break100(Exception): pass
+    class goto110(Exception): pass
+    class break110(Exception): pass
     i = 1
     j = 1
     irstk = [[0 for r in range(0, nrow + ncol + 1)] for c in range(0, nrow + ncol + 1)]
@@ -874,8 +884,7 @@ class TablesAnalysis:
     l = 1
     amx = 0.0
     while True: # Fortran line 50
-      if True:
-        goto50bool = False
+      try:
         ir1 = irstk[istk][1]
         ic1 = icstk[istk][1]
         m = 0
@@ -904,8 +913,7 @@ class TablesAnalysis:
             m = nco - 1
             n = 2
         while True: # Fortran line 60
-          if True:
-            goto60bool = False
+          try:
             if n == 1:
               i = l
               j = 1
@@ -1003,48 +1011,55 @@ class TablesAnalysis:
               ncstk[istk] = nco
               ystk[istk] = y
               l = 1
-              goto50bool = True
-              break
+              raise goto50
             if y >  amx:
               amx = y
               if dsp[0] - amx <= tol:
                 dsp[0] = 0.0
                 return
             while True: # Fortran line 100
-              goto100bool = False
-              istk -= 1
-              if istk == 0:
-                dsp[0] -= amx
-                if dsp[0] - amx <= tol:
-                  dsp[0] = 0.0
-                return
-              l = int(lstk[istk] + 1)
-              while True: # Fortran line 110
-                if l > mstk[istk]:
-                  goto100bool = True
-                  break
-                n = nstk[istk]
-                nro = nrstk[istk]
-                nco = ncstk[istk]
-                y = ystk[istk]
-                if n == 1:
-                  if irstk[istk][l] < irstk[istk][l - 1]:
-                    goto60bool = True
+              try:
+                istk -= 1
+                if istk == 0:
+                  dsp[0] -= amx
+                  if dsp[0] - amx <= tol:
+                    dsp[0] = 0.0
+                  return
+                l = int(lstk[istk] + 1)
+                while True: # Fortran line 110
+                  try:
+                    if l > mstk[istk]:
+                      raise goto100
+                    n = nstk[istk]
+                    nro = nrstk[istk]
+                    nco = ncstk[istk]
+                    y = ystk[istk]
+                    if n == 1:
+                      if irstk[istk][l] < irstk[istk][l - 1]:
+                        raise goto60
+                    elif n == 2:
+                      if icstk[istk][l] < icstk[istk][l - 1]:
+                        raise goto60
+                    l += 1
+                    raise goto110
+                  except goto110:
+                    continue
+                  except break110:
                     break
-                elif n == 2:
-                  if icstk[istk][l] < icstk[istk][l - 1]:
-                    goto60bool = True
-                    break
-                l += 1
+                raise break100
+              except goto100:
                 continue
-              if goto100bool:
-                continue
-              break
-            if goto60bool:
-              continue
+              except break100:
+                break
+            raise break60
+          except goto60:
+            continue
+          except break60:
             break
-        if goto50bool:
-          continue
+        raise break50
+      except goto50:
+        continue
+      except break50:
         break
 
   def f3xact(self, nrow, irow, irowoffset, ncol, icol, icoloffset, dlp, mm, fact, ico, iro, it, lb, nr, nt, nu, itc, ist, stv, alen, tol):
@@ -1054,6 +1069,16 @@ class TablesAnalysis:
         Returns:
           none
     """
+    class goto90(Exception): pass
+    class break90(Exception): pass
+    class goto100(Exception): pass
+    class break100(Exception): pass
+    class goto110(Exception): pass
+    class break110(Exception): pass
+    class goto120(Exception): pass
+    class break120(Exception): pass
+    class goto200(Exception): pass
+    class break200(Exception): pass
     n11 = 0
     n12 = 0
     nro = 0
@@ -1132,8 +1157,7 @@ class TablesAnalysis:
     kyy = ico[nco] + 1
     bool90 = False # to goto 100
     while True: # Fortran line 90
-      if True:
-        goto90bool = False
+      try:
         if bool90:
           xmin = [False]
           if iro[nro - 1] <= iro[irl - 1] + nco:
@@ -1145,38 +1169,40 @@ class TablesAnalysis:
             if val[0] < vmn:
               vmn = val[0]
             while True: # Fortran line 200
-              if nitc > 0:
-                itp = itc[nitc + k] + k
-                nitc -= 1
-                val[0] = stv[itp]
-                key = int(ist[itp])
-                ist[itp] = -1
-                i = nco
-                while i >= 2:
-                  ico[i] = key % kyy
-                  key = int(key / kyy)
-                  i -= 1
-                ico[i] = key
-                nt[i] = nn - ico[1]
-                for i in range(2, nco + 1):
-                  nt[i] = nt[i - 1] - ico[i]
-                goto90bool = True
-                break
-              elif nro > 2 and nst > 0:
-                nitc = nst
-                nst = 0
-                k = ks
-                ks = ldst - ks
-                nn -= iro[irl]
-                irl += 1
-                nro -= 1
+              try:
+                if nitc > 0:
+                  itp = itc[nitc + k] + k
+                  nitc -= 1
+                  val[0] = stv[itp]
+                  key = int(ist[itp])
+                  ist[itp] = -1
+                  i = nco
+                  while i >= 2:
+                    ico[i] = key % kyy
+                    key = int(key / kyy)
+                    i -= 1
+                  ico[i] = key
+                  nt[i] = nn - ico[1]
+                  for i in range(2, nco + 1):
+                    nt[i] = nt[i - 1] - ico[i]
+                  raise goto90
+                elif nro > 2 and nst > 0:
+                  nitc = nst
+                  nst = 0
+                  k = ks
+                  ks = ldst - ks
+                  nn -= iro[irl]
+                  irl += 1
+                  nro -= 1
+                  raise goto200
+                dlp[0] -= vmn
+                return
+              except goto200:
                 continue
-              dlp[0] -= vmn
-              return
-        if goto90bool:
-          continue
+              except break200:
+                break
         while True: # Fortran line 100
-          if True:
+          try:
             lev = 1
             nr1 = nro - 1
             nrt = iro[irl]
@@ -1185,48 +1211,49 @@ class TablesAnalysis:
             nu[1] = int(float((nrt + nc1s) * (nct + nr1)) / float(nn + nr1 * nc1s)) - lb[1] + 1
             nr[1] = nrt - lb[1]
             while True: # Fortran line 110
-              if True:
-                goto110bool = False
+              try:
                 nu[lev] -= 1
                 if nu[lev] == 0:
                   if lev == 1:
                     while True: # Fortran line 200
-                      if nitc > 0:
-                        itp = itc[nitc + k] + k
-                        nitc -= 1
-                        val[0] = stv[itp]
-                        key = int(ist[itp])
-                        ist[itp] = -1
-                        i = nco
-                        while i >= 2:
-                          ico[i] = key % kyy
-                          key = int(key / kyy)
-                          i -= 1
-                        ico[i] = key
-                        nt[i] = nn - ico[1]
-                        for i in range(2, nco + 1):
-                          nt[i] = nt[i - 1] - ico[i]
-                        goto90bool = True
-                        break
-                      elif nro > 2 and nst > 0:
-                        nitc = nst
-                        nst = 0
-                        k = ks
-                        ks = ldst - ks
-                        nn -= iro[irl]
-                        irl += 1
-                        nro -= 1
+                      try:
+                        if nitc > 0:
+                          itp = itc[nitc + k] + k
+                          nitc -= 1
+                          val[0] = stv[itp]
+                          key = int(ist[itp])
+                          ist[itp] = -1
+                          i = nco
+                          while i >= 2:
+                            ico[i] = key % kyy
+                            key = int(key / kyy)
+                            i -= 1
+                          ico[i] = key
+                          nt[i] = nn - ico[1]
+                          for i in range(2, nco + 1):
+                            nt[i] = nt[i - 1] - ico[i]
+                          raise goto90
+                        elif nro > 2 and nst > 0:
+                          nitc = nst
+                          nst = 0
+                          k = ks
+                          ks = ldst - ks
+                          nn -= iro[irl]
+                          irl += 1
+                          nro -= 1
+                          raise goto200
+                        dlp[0] -= vmn
+                        return
+                      except goto200:
                         continue
-                      dlp[0] -= vmn
-                      return
-                    if goto90bool:
-                      break
+                      except break200:
+                        break
                   lev -= 1
-                  continue
+                  raise goro110
                 lb[lev] += 1
                 nr[lev] -= 1
                 while True: # Fortran line 120
-                  if True:
+                  try:
                     alen[lev] = alen[lev - 1] + fact[lb[lev]]
                     if lev < nc1s:
                       nn1 = int(nt[lev])
@@ -1237,7 +1264,7 @@ class TablesAnalysis:
                       lb[lev] = int(float((nrt + 1) * (nct + 1)) / float(nn1 + nr1 * nc1 + 1) - tol)
                       nu[lev] = int(float((nrt + nc1) * (nct + nr1)) / float(nn1 + nr1 + nc1) - lb[lev] + 1)
                       nr[lev] = nrt - lb[lev]
-                      continue
+                      raise goto120
                     alen[nco] = alen[lev] + fact[nr[lev]]
                     lb[nco] = nr[lev]
                     v = val[0] + alen[nco]
@@ -1323,18 +1350,28 @@ class TablesAnalysis:
                         nst += 1
                         ii = nst + ks
                         itc[ii] = itp
-                        goto110bool = True
-                        break
+                        raise goto110
                       stv[ii] = min(v, stv[ii]) # Fortran line 190
-                    goto110bool = True
+                    raise goto110
+                  except goto120:
+                    continue
+                  except break120:
                     break
-                if goto110bool:
-                  continue
+                raise break110
+              except goto110:
+                continue
+              except break110:
                 break
+            raise break100
+          except goto100:
+            continue
+          except break100:
             break
-        if goto90bool:
-          bool90 = True
-          continue
+        raise break90
+      except goto90:
+        bool90 = True
+        continue
+      except break90:
         break
 
   def f7xact(self, nrow, imax, idif, k, ks, iflag):
@@ -1344,6 +1381,8 @@ class TablesAnalysis:
         Returns:
           none
     """
+    class goto50(Exception): pass
+    class break50(Exception): pass
     m = 0
     k1 = 0
     mm = 0
@@ -1373,49 +1412,50 @@ class TablesAnalysis:
           ks[0] = k[0]
     else:
       while True: # Fortran line 50
-        goto50bool = False
-        while True: # Also for Fortran line 50
-          goto70bool = False
-          for k1 in range(k[0] + 1, nrow + 1):
-            if idif[k1] > 0:
-              goto70bool = True
-              break
-          if goto70bool:
-            break
-          iflag[0] = 1
-          return
-        mm = 1
-        for i in range(1, k[0] + 1):
-          mm += idif[i]
-          idif[i] = 0
-        k[0] = k1
-        while True: # Fortran line 90
-          k[0] -= 1
-          m = min(mm, imax[k[0]])
-          idif[k[0]] = m
-          mm -= m
-          if mm > 0 and k[0] != 1:
-            continue
-          if mm > 0:
-            if k1 != nrow:
-              k[0] = k1
-              goto50bool = True
+        try:
+          while True: # Also for Fortran line 50
+            goto70bool = False
+            for k1 in range(k[0] + 1, nrow + 1):
+              if idif[k1] > 0:
+                goto70bool = True
+                break
+            if goto70bool:
               break
             iflag[0] = 1
             return
-          break
-        if goto50bool:
-          continue
-        idif[k1] = idif[k1] - 1
-        ks[0] = 0
-        while True: # Fortran line 100
-          ks[0] += 1
-          if ks[0] > k[0]:
+          mm = 1
+          for i in range(1, k[0] + 1):
+            mm += idif[i]
+            idif[i] = 0
+          k[0] = k1
+          while True: # Fortran line 90
+            k[0] -= 1
+            m = min(mm, imax[k[0]])
+            idif[k[0]] = m
+            mm -= m
+            if mm > 0 and k[0] != 1:
+              continue
+            if mm > 0:
+              if k1 != nrow:
+                k[0] = k1
+                raise goto50
+              iflag[0] = 1
+              return
+            break
+          idif[k1] = idif[k1] - 1
+          ks[0] = 0
+          while True: # Fortran line 100
+            ks[0] += 1
+            if ks[0] > k[0]:
+              return
+            if idif[ks[0]] >= imax[ks[0]]:
+              continue
             return
-          if idif[ks[0]] >= imax[ks[0]]:
-            continue
-          return
-        break
+          raise break50
+        except goto50:
+          continue
+        except break50:
+          break
 
   def f5xact(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp):
     """ Supports the MxN table statistics
@@ -1424,6 +1464,8 @@ class TablesAnalysis:
         Returns:
           none
     """
+    class goto50(Exception): pass
+    class break50(Exception): pass
     ird = 1
     ipn = 1
     goto40bool = False
@@ -1503,6 +1545,18 @@ class TablesAnalysis:
         Returns:
           none
     """
+    class goto110(Exception): pass
+    class break110(Exception): pass
+    class goto130(Exception): pass
+    class break130(Exception): pass
+    class goto150(Exception): pass
+    class break150(Exception): pass
+    class goto240(Exception): pass
+    class break240(Exception): pass
+    class goto300(Exception): pass
+    class break300(Exception): pass
+    class goto310(Exception): pass
+    class break310(Exception): pass
     f5itp = [0]
     for i in range(1, 2 * ldkey + 1):
       key[i] = -9999
@@ -1624,8 +1678,7 @@ class TablesAnalysis:
     ifrq[1] = 1
     ifrq[ikstp2 + 1] = -1
     while True: # Fortran line 110
-      if True:
-        goto110bool = False
+      try:
         kb = nco - k + 1
         ks = [0]
         n = ico[kb] #Ends up being the lowest column total
@@ -1634,7 +1687,7 @@ class TablesAnalysis:
         for i in range(1, nro + 1):
           idif[i] = 0
         while True: # Fortran line 130
-          if True:
+          try:
             kd[0] -= 1 # So kd is now highest index of row totals vector
             ntot[0] = min(n, iro[kd[0]]) # The lowest column total or the highest row total??
             idif[kd[0]] = ntot[0]
@@ -1642,31 +1695,33 @@ class TablesAnalysis:
               kmax -= 1
             n -= ntot[0]
             if n > 0 and kd[0] != 1:
-              continue
+              raise goto130
             k1 = 0
             if n != 0:
               while True: # Fortran line 310
-                iflag = [1]
-                self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
-                if iflag[0] == 3:
-                  k = k - 1
-                  itop[0] = 0
-                  ikkey = jkey - 1
-                  ikstp = jstp - 1
-                  ikstp2 = jstp2 - 1
-                  jkey = ldkey - jkey + 2
-                  jstp = ldstp - jstp + 2
-                  jstp2 = 2 * ldstp + jstp
-                  for f in range(1,  2 * ldkey + 1):
-                    key2[f] = -9999
-                  if k >= 2:
-                    continue
-                  return
-                else:
-                  goto110bool = True
+                try:
+                  iflag = [1]
+                  self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                  if iflag[0] == 3:
+                    k = k - 1
+                    itop[0] = 0
+                    ikkey = jkey - 1
+                    ikstp = jstp - 1
+                    ikstp2 = jstp2 - 1
+                    jkey = ldkey - jkey + 2
+                    jstp = ldstp - jstp + 2
+                    jstp2 = 2 * ldstp + jstp
+                    for f in range(1,  2 * ldkey + 1):
+                      key2[f] = -9999
+                    if k >= 2:
+                      raise goto310
+                    return
+                  else:
+                    raise goto110
+                except goto310:
+                  continue
+                except break310:
                   break
-              if goto110bool:
-                break
             k1 = k - 1
             n = ico[kb]
             ntot[0] = 0
@@ -1674,8 +1729,7 @@ class TablesAnalysis:
             for i in range(kb + 1, nco + 1):
               ntot[0] += ico[i]
             while True: # Fortran line 150
-              if True:
-                goto150bool = False
+              try:
                 for i in range(1, nro + 1):
                   irn[i] = iro[i] - idif[i]
                 nrb = 0;
@@ -1764,7 +1818,7 @@ class TablesAnalysis:
                         bool240 = True
                         break
                 while True: # Fortran line 240
-                  if True:
+                  try:
                     ipsh = True
                     ipn = ipoin[ipo[0] + ikkey]
                     pastp = stp[ipn + ikstp]
@@ -1842,66 +1896,76 @@ class TablesAnalysis:
                       obs2 = obs - drn - dro
                       obs3 = obs2
                     while True: # Fortran line 300
-                      if pastp <= obs3:
-                        pre[0] += ifreq * math.exp(pastp + drn)
-                        preops += 1
-                        if preops == 106 or preops == 13:
-                          checkpoint = True
-                      elif pastp < obs2:
-                        if chisq:
-                          df = (nro2 - 1) * (k1 - 1)
-                          pv = self.gamds(max(0.0, tmp + 2.0 * (pastp + drn)) / 2.0, df / 2.0, ifault)
-                          pre[0] += ifreq * math.exp(pastp + drn) * pv
-                        else:
-                          self.f5xact(pastp + ddf, tol, kval, key, jkey, ldkey, ipoin, jkey, stp, jstp, ldstp, ifrq, jstp, ifrq, jstp2, ifrq, jstp3, ifrq, jstp4, ifreq, itop, ipsh, f5itp)
-                          ipsh = False
-                      ipn = ifrq[ipn + ikstp2]
-                      if ipn > 0:
-                        pastp = stp[ipn + ikstp]
-                        ifreq = ifrq[ipn + ikstp]
-                        continue
-                      self.f7xact(kmax, iro, idif, kd, ks, iflag)
-                      if iflag[0] != 1:
-                        goto150bool = True
-                        break
-                      while True: # Fortran line 310
-                        iflag[0] = 1
-                        self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
-                        if iflag[0] == 3:
-                          k -= 1
-                          itop[0] = 0
-                          ikkey = jkey - 1
-                          ikstp = jstp - 1
-                          ikstp2 = jstp2 - 1
-                          jkey = ldkey - jkey + 2
-                          jstp = ldstp - jstp + 2
-                          jstp2 = 2 * ldstp + jstp
-                          for f in range(1, 2 * ldkey + 1):
-                            key2[f] = -9999
-                          if k >= 2:
+                      try:
+                        if pastp <= obs3:
+                          pre[0] += ifreq * math.exp(pastp + drn)
+                          preops += 1
+                          if preops == 106 or preops == 13:
+                            checkpoint = True
+                        elif pastp < obs2:
+                          if chisq:
+                            df = (nro2 - 1) * (k1 - 1)
+                            pv = self.gamds(max(0.0, tmp + 2.0 * (pastp + drn)) / 2.0, df / 2.0, ifault)
+                            pre[0] += ifreq * math.exp(pastp + drn) * pv
+                          else:
+                            self.f5xact(pastp + ddf, tol, kval, key, jkey, ldkey, ipoin, jkey, stp, jstp, ldstp, ifrq, jstp, ifrq, jstp2, ifrq, jstp3, ifrq, jstp4, ifreq, itop, ipsh, f5itp)
+                            ipsh = False
+                        ipn = ifrq[ipn + ikstp2]
+                        if ipn > 0:
+                          pastp = stp[ipn + ikstp]
+                          ifreq = ifrq[ipn + ikstp]
+                          raise goto300
+                        self.f7xact(kmax, iro, idif, kd, ks, iflag)
+                        if iflag[0] != 1:
+                          raise goto150
+                        while True: # Fortran line 310
+                          try:
+                            iflag[0] = 1
+                            self.f6xact(nro, iro, iflag, kyy, key, ikkey + 1, ldkey, last, ipo)
+                            if iflag[0] == 3:
+                              k -= 1
+                              itop[0] = 0
+                              ikkey = jkey - 1
+                              ikstp = jstp - 1
+                              ikstp2 = jstp2 - 1
+                              jkey = ldkey - jkey + 2
+                              jstp = ldstp - jstp + 2
+                              jstp2 = 2 * ldstp + jstp
+                              for f in range(1, 2 * ldkey + 1):
+                                key2[f] = -9999
+                              if k >= 2:
+                                raise goto310
+                            else:
+                              raise goto110
+                            raise break310
+                          except goto310:
                             continue
-                        else:
-                          goto110bool = True
+                          except break310:
+                              break
+                        raise break300
+                      except goto300:
+                        continue
+                      except break300:
                           break
-                        break
+                    raise break110
+                  except goto240:
+                    continue
+                  except break240:
                       break
-                      if goto110bool:
-                        break
-                    if goto150bool:
-                      break
-                    if goto110bool:
-                      break
-                    break
-                if goto150bool:
-                  continue
-                if goto110bool:
+                raise break110
+              except goto150:
+                continue
+              except break150:
                   break
-                break
-            if goto110bool:
-              break
+            raise break110
+          except goto130:
+            continue
+          except break130:
             break
-        if goto110bool:
-          continue
+        raise break110
+      except goto110:
+        continue
+      except break110:
         break
 
   def FEXACT(self, SortedRows):
