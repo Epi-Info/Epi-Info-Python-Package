@@ -1417,6 +1417,53 @@ class TablesAnalysis:
           return
         break
 
+  def f5l60(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          int
+    """
+    itmp = ipn
+    if stp[ipn + stpoffset - 1] < test1:
+      itmp = ipn
+      ipn = nl[ipn + nloffset - 1]
+      if ipn > 0:
+        return self.f5l60(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2)
+      else:
+        nl[itmp + nloffset - 1] = itop[0]
+    elif stp[ipn + stpoffset - 1] > test2:
+      itmp = ipn
+      ipn = nr[ipn + nroffset - 1]
+      if ipn > 0:
+        return self.f5l60(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2)
+      else:
+        nr[itmp + nroffset - 1] = itop[0]
+    return itmp
+
+  def f5l50(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2):
+    """ Supports the MxN table statistics
+        Parameters:
+          several
+        Returns:
+          bool
+    """
+    if stp[ipn + stpoffset - 1] < test1:
+      ipn = nl[ipn + nloffset - 1]
+      if ipn > 0:
+        return self.f5l50(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2)
+    elif stp[ipn + stpoffset - 1] > test2:
+      ipn = nr[ipn + nroffset - 1]
+      if ipn > 0:
+        return self.f5l50(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2)
+    else:
+      ifrq[ipn + ifrqoffset - 1] = ifrq[ipn + ifrqoffset - 1] + ifreq
+      return True
+    itop[0] += 1
+    ipn = ipoin[itp[0] + ipoinoffset - 1]
+    itmp = ipn
+    return False
+
   def f5xact(self, pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp):
     """ Supports the MxN table statistics
         Parameters:
@@ -1457,38 +1504,9 @@ class TablesAnalysis:
     ipn = ipoin[itp[0] + ipoinoffset - 1]
     test1 = pastp - tol
     test2 = pastp + tol
-    while True: # Fortran line 50
-      if stp[ipn + stpoffset - 1] < test1:
-        ipn = nl[ipn + nloffset - 1]
-        if ipn > 0:
-          continue
-      elif stp[ipn + stpoffset - 1] > test2:
-        ipn = nr[ipn + nroffset - 1]
-        if ipn > 0:
-          continue
-      else:
-        ifrq[ipn + ifrqoffset - 1] = ifrq[ipn + ifrqoffset - 1] + ifreq
-        return
-      itop[0] += 1
-      ipn = ipoin[itp[0] + ipoinoffset - 1]
-      itmp = ipn
-      break
-    while True: # Fortran line 60
-      if stp[ipn + stpoffset - 1] < test1:
-        itmp = ipn
-        ipn = nl[ipn + nloffset - 1]
-        if ipn > 0:
-          continue
-        else:
-          nl[itmp + nloffset - 1] = itop[0]
-      elif stp[ipn + stpoffset - 1] > test2:
-        itmp = ipn
-        ipn = nr[ipn + nroffset - 1]
-        if ipn > 0:
-          continue
-        else:
-          nr[itmp + nroffset - 1] = itop[0]
-      break
+    if self.f5l50(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2):
+      return
+    itmp = self.f5l60(pastp, tol, kval, key, keyoffset, ldkey, ipoin, ipoinoffset, stp, stpoffset, ldstp, ifrq, ifrqoffset, npoin, npoinoffset, nr, nroffset, nl, nloffset, ifreq, itop, ipsh, itp, ipn, test1, test2)
     npoin[itop[0] + npoinoffset - 1] = npoin[itmp + npoinoffset - 1]
     npoin[itmp + npoinoffset - 1] = itop[0]
     stp[itop[0] + stpoffset - 1] = pastp
