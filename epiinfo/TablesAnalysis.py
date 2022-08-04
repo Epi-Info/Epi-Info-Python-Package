@@ -309,7 +309,7 @@ class TablesAnalysis:
     while found == False and iter < 10000 and errorRenamed == 0:
       iter += 1
       x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
-      f2 = self.Func(x2, sumA, value, degN, degD, bigPolyD, bigPolyN)
+      f2 = self.Func(x2, sumA, value, int(degN), int(degD), bigPolyD, bigPolyN)
       if f1 * f2 < 0.0:
         x0 = x1
         f0 = f1
