@@ -18,17 +18,26 @@ class BigDouble:
       self.logValue = math.log10(adder)
       return
     power = round(self.logValue)
-    self.logValue = power + math.log10(10.0 ** (self.logValue - power) + 10.0 ** (log10(adder) - power))
+    if adder > 0:
+      self.logValue = power + math.log10(10.0 ** (self.logValue - power) + 10.0 ** (math.log10(adder) - power))
+    elif adder < 0:
+      try:
+        self.logValue = power + math.log10(10.0 ** (self.logValue - power) - 10.0 ** (math.log10(-adder) - power))
+      except ValueError:
+        self.logValue = 0.0
 
   def plusLog(self, logAdder):
     if 10 ** self.logValue == 0:
-      self.logValue = math.log10(logAdder)
+      self.logValue = logAdder
       return
     power = round(self.logValue)
     self.logValue = power + math.log10(10.0 ** (self.logValue - power) + 10.0 ** (logAdder - power))
 
   def times(self, multiple):
-    self.logValue += math.log10(multiple)
+    try:
+      self.logValue += math.log10(multiple)
+    except ValueError:
+      self.logValue = float('-inf')
 
   def timesReturn(self, multiple):
     try:
@@ -37,7 +46,10 @@ class BigDouble:
       return float('-inf')
 
   def dividedBy(self, divisor):
-    self.logValue -= math.log10(multiple)
+    try:
+      self.logValue -= math.log10(divisor)
+    except ValueError:
+      self.logValue = float('inf')
 
   def doubleValue(self):
     return 10.0 ** self.logValue
