@@ -15,6 +15,7 @@ class TablesAnalysis:
   """
   def __init__(self):
     self.includeMissing = False
+    self.useCommonReference = False
     self.mstrC = None
     self.mdblC = None
     self.mdblP = None
@@ -2033,6 +2034,21 @@ class TablesAnalysis:
     stats['FishersExact'] = self.FEXACT(table)
     return stats
 
+  def Subset(self, dataTable, column, values):
+    """ Executes the supporting functions to run the analysis
+        Parameters:
+          dataTable (list(dict)): The analysis dataset
+          column (string): The value on which to subset
+          values (list): The values to keep
+        Returns:
+          None. Stores results as class variables.
+    """
+    newdt = []
+    for row in dataTable:
+      if row[column] in values:
+        newdt.append(row)
+    return newdt
+
   def Run(self, inputVariableList, dataTable):
     """ Executes the supporting functions to run the analysis
         Parameters:
@@ -2043,6 +2059,10 @@ class TablesAnalysis:
     """
     if 'includeMissing' in inputVariableList:
       self.includeMissing = inputVariableList['includemissing']
+    try:
+      self.useCommonReference = inputVariableList['usecommonreference']
+    except KeyError:
+      pass
     variablenames = []
     values = []
     tables = []
@@ -2088,13 +2108,31 @@ class TablesAnalysis:
         rowindex = exposureValues.index(tableRow[exposure])
         colindex = outcomeValues.index(tableRow[inputVariableList['outcomeVariable']])
         onetable[rowindex][colindex] += 1
-      tables.append(onetable)
-      rowtotals.append(self.RowTotals(onetable))
-      coltotals.append(self.ColumnTotals(onetable))
       if len(outcomeValues) == 2 and len(exposureValues) == 2:
+        tables.append(onetable)
+        rowtotals.append(self.RowTotals(onetable))
+        coltotals.append(self.ColumnTotals(onetable))
         statistics.append(self.TwoX2Compute(onetable))
+        variablenames.append(inputVariableList['outcomeVariable'] + ' * ' + exposure)
+        values.append([outcomeValues, exposureValues])
+      elif len(outcomeValues) == 2 and len(exposureValues) > 2 and self.useCommonReference:
+        ivl0 = {}
+        for ivlk in inputVariableList:
+          ivl0[ivlk] = inputVariableList[ivlk]
+        ivl0['exposureVariables'] = [exposure]
+        for ev in exposureValues[1:]:
+          crresult = self.Run(ivl0, self.Subset(dataTable, exposure, [exposureValues[0], ev]))
+          variablenames += crresult['Variables']
+          values += crresult['VariableValues']
+          tables += crresult['Tables']
+          rowtotals += crresult['RowTotals']
+          coltotals += crresult['ColumnTotals']
+          statistics += crresult['Statistics']
       else:
+        tables.append(onetable)
+        rowtotals.append(self.RowTotals(onetable))
+        coltotals.append(self.ColumnTotals(onetable))
         statistics.append(self.MXNCompute(onetable))
-      variablenames.append(inputVariableList['outcomeVariable'] + ' * ' + exposure)
-      values.append([outcomeValues, exposureValues])
+        variablenames.append(inputVariableList['outcomeVariable'] + ' * ' + exposure)
+        values.append([outcomeValues, exposureValues])
     return {'Variables' : variablenames, 'VariableValues' : values, 'Tables' : tables, 'RowTotals' : rowtotals, 'ColumnTotals' : coltotals, 'Statistics' : statistics}

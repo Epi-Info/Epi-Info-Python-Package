@@ -31,7 +31,10 @@ class BigDouble:
     self.logValue += math.log10(multiple)
 
   def timesReturn(self, multiple):
-    return self.logValue + math.log10(multiple)
+    try:
+      return self.logValue + math.log10(multiple)
+    except ValueError:
+      return float('-inf')
 
   def dividedBy(self, divisor):
     self.logValue -= math.log10(multiple)
