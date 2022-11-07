@@ -1,6 +1,10 @@
 import io
+import os
 import csv
 import json
+import ijson
+import sqlite3
+import ast
 import time
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
@@ -35,6 +39,8 @@ class randata:
         self._Dictlist = []
         self._Indexes = {}
         self._Dlindexes = set([])
+        self._Path = None 
+        self._TableName = None 
         if value:
             if type(value) == list and len(value) > 0 and type(value[0]) == dict:
                 self._Dictlist = value
@@ -96,8 +102,46 @@ class randata:
             Returns:                                    
               none
         """
-        return
+        self._Indexes = value
     Indexes = property(get_Indexes, set_Indexes)
+        
+    # Path to data storage
+    def get_Path(self):
+        """ Returns the object's path to storage files
+            Parameters:    
+              none
+            Returns:                                    
+              str
+        """
+        return self._Path
+    def set_Path(self, value):
+        """ Sets the object's path to storage files
+            Parameters:    
+              value (str)
+            Returns:                                    
+              none
+        """
+        self._Path = value
+    Path = property(get_Path, set_Path)
+        
+    # Name of data table for storage in JSON format
+    def get_TableName(self):
+        """ Returns the object's name for associated JSON file.
+            Parameters:    
+              none
+            Returns:                                    
+              str
+        """
+        return self._TableName
+    def set_TableName(self, value):
+        """ Sets the object's name for associated JSON file.
+            Parameters:    
+              value (str)
+            Returns:                                    
+              none
+        """
+        self._TableName = value
+    TableName = property(get_TableName, set_TableName)
     
     def list(self):
         """ Returns the Dictlist property, the list of dictionaries.
@@ -317,6 +361,145 @@ class randata:
                         allrows = allrows.union(rows)
                 return [self._Dictlist[row] for row in allrows]
     
+    def rowsFromSource(self, setofrows):
+        """ Returns a list of dictionaries from JSON source file whose
+            values pass the given where condition.
+            Parameters: 
+              where (str)
+              value (str)
+            Returns:                                    
+              list of dictionaries
+        """
+        rl = []
+        lensetofrows = len(setofrows)
+        with open(self.get_Path() + '/' + self.get_TableName() + '.json', 'r') as fin:
+            i = 0
+            lis = 0
+            for li in ijson.items(fin, "item"):
+                if i in setofrows:
+                    rl.append(li)
+                    lis += 1
+                    if lis == lensetofrows:
+                        break
+                i += 1
+        return rl
+    
+    def allRowsFromSource(self):
+        """ Returns a list of dictionaries from JSON source file.
+            Parameters: 
+              where (str)
+              value (str)
+            Returns:                                    
+              list of dictionaries
+        """
+        with open(self.get_Path() + '/' + self.get_TableName() + '.json', 'r') as fin:
+            return json.load(fin)
+    
+    def querySource(self, where, values=None):
+        """ Returns a list of dictionaries from JSON source file whose
+            values pass the given where condition.
+            Parameters: 
+              where (str)
+              value (str)
+            Returns:                                    
+              list of dictionaries
+        """
+        if where is None:
+            return
+        if len(where) == 0:
+            return
+        if self.get_Path() is None:
+            return
+        if self.get_TableName() is None:
+            return
+        
+        if type(where) == str and values is None:
+            if ' != ' in where:
+                splitter = ' != '
+                indexname = where.split(splitter)[0]
+                value = where.split(splitter)[1]
+                if indexname not in self._Indexes:
+                    return ['Column ' + indexname + ' not indexed']
+                index = self._Indexes[indexname]
+                if value not in index:
+                    return self.allRowsFromSource()
+                rows = self.Dlindexes - index[value]
+                return self.rowsFromSource(rows)
+            elif ' == ' in where:
+                splitter = ' == '
+                indexname = where.split(splitter)[0]
+                value = where.split(splitter)[1]
+                if indexname not in self._Indexes:
+                    return []
+                index = self._Indexes[indexname]
+                if value not in index:
+                    return []
+                rows = index[value]
+                return self.rowsFromSource(rows)
+            else:
+                indexname = where
+                value = values
+                if indexname not in self._Indexes:
+                    print(indexname, 'not indexed')
+                    return []
+                index = self._Indexes[indexname]
+                if value not in index:
+                    return []
+                rows = index[value]
+                return self.rowsFromSource(rows)
+        
+        elif values is not None:
+            if type(where) == str and type(values) == str:
+                indexname = where
+                value = values
+                if indexname not in self._Indexes:
+                    print(indexname, 'not indexed')
+                    return []
+                index = self._Indexes[indexname]
+                if value not in index:
+                    return []
+                rows = index[value]
+                return self.rowsFromSource(rows)
+            elif type(where) == list and type(values) == str:
+                value = values
+                allrows = set()
+                for indexname in where:
+                    if indexname not in self._Indexes:
+                        print(indexname, 'not indexed')
+                        continue
+                    index = self._Indexes[indexname]
+                    if value not in index:
+                        continue
+                    rows = index[value]
+                    allrows = allrows.union(rows)
+                return self.rowsFromSource(allrows)
+            elif type(where) == str and type(values) == list:
+                indexname = where
+                allrows = set()
+                for value in values:
+                    if indexname not in self._Indexes:
+                        print(indexname, 'not indexed')
+                        return []
+                    index = self._Indexes[indexname]
+                    if value not in index:
+                        continue
+                    rows = index[value]
+                    allrows = allrows.union(rows)
+                return self.rowsFromSource(allrows)
+            elif type(where) == list and type(values) == list:
+                allrows = set()
+                for indexname in where:
+                    for value in values:
+                        if indexname not in self._Indexes:
+                            print(indexname, 'not indexed')
+                            continue
+                        index = self._Indexes[indexname]
+                        if value not in index:
+                            continue
+                        rows = index[value]
+                        allrows = allrows.union(rows)
+                return self.rowsFromSource(allrows)
+    
     def intcolumns(self, columns):
         """ Converts str values to int in Dictlist
             Parameters: 
@@ -344,6 +527,323 @@ class randata:
             for k in columns:
                 if row[k] is not None:
                     row[k] = float(row[k])
+    
+    def GetSQLiteDataTypes(self):
+        """ Stores the randata object as a sqlite3 table.
+            Parameters: 
+              force (bool): optional, to force re-creation of sqlite3 table
+            Returns:                                    
+              none
+        """
+        datatypes = {}
+        sqliteConnection = sqlite3.connect(self.get_Path() + '/' + self.get_TableName() + '.db')
+        c = sqliteConnection.cursor()
+        c.execute("select sql from sqlite_master where type = 'table' and name = '" + self.get_TableName() + "';")
+        columns = list(next(zip(*c.description)))
+        lod = []
+        for row in c.fetchall():
+          rd = {}
+          for i in range(len(columns)):
+            rd[columns[i]] = row[i]
+          lod.append(rd)
+        c.close()
+        sqliteConnection.close()
+        for pair in lod[0]['sql'].split('(')[1][:-1].split(', '):
+          datatypes[pair.split(' ')[0]] = pair.split(' ')[1]
+        return datatypes
+    
+    def AppendSQLiteTable(self):
+        """ Stores the randata object as a sqlite3 table.
+            Parameters: 
+              force (bool): optional, to force re-creation of sqlite3 table
+            Returns:                                    
+              none
+        """
+        if self.get_Path() == None or self.get_TableName() == None:
+          print('Path and Table Name must be set to perform this task')
+          return
+        if os.path.isdir(self.get_Path()) == False:
+          print(self.get_Path(), 'does not exist.')
+          return
+        sqliteConnection = sqlite3.connect(self.get_Path() + '/' + self.get_TableName() + '.db')
+        c = sqliteConnection.cursor()
+        c.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='" + self.get_TableName() + "';")
+        tableExists = c.fetchone()[0] > 0
+        if tableExists == False:
+          print(self.get_TableName(), 'does not exist.')
+          return
+          c.close()
+          sqliteConnection.close()
+        datatypes = self.GetSQLiteDataTypes()
+        for row in self.get_Dictlist():
+          insertStatement = 'insert into ' + self.get_TableName() + ' values('
+          cols = 0
+          for col in row:
+            if cols > 0:
+              insertStatement += ', '
+            cols += 1
+            if row[col] == None:
+              insertStatement += 'NULL'
+              continue
+            if datatypes[col] == 'TEXT':
+              insertStatement += "'"
+            insertStatement += str(row[col])
+            if datatypes[col] == 'TEXT':
+              insertStatement += "'"
+          insertStatement += ');'
+          c.execute(insertStatement)
+        sqliteConnection.commit()
+        c.close()
+        sqliteConnection.close()
+    
+    def CreateSQLiteTable(self, force=False):
+        """ Stores the randata object as a sqlite3 table.
+            Parameters: 
+              force (bool): optional, to force re-creation of sqlite3 table
+            Returns:                                    
+              none
+        """
+        if self.get_Path() == None or self.get_TableName() == None:
+          print('Path and Table Name must be set to perform this task')
+          return
+        if os.path.isdir(self.get_Path()) == False:
+          print(self.get_Path(), 'does not exist.')
+          return
+        sqliteConnection = sqlite3.connect(self.get_Path() + '/' + self.get_TableName() + '.db')
+        c = sqliteConnection.cursor()
+        c.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='" + self.get_TableName() + "';")
+        tableExists = c.fetchone()[0] > 0
+        if tableExists == True and force == False:
+          print(self.get_TableName(), 'already exists.')
+          print('Include True parameter to replace the table.')
+          c.close()
+          sqliteConnection.close()
+          return
+        if force == True and tableExists == True:
+          dropStatement = "drop table " + self.get_TableName()
+          c.execute(dropStatement)
+        datatypes = {}
+        for col in self.get_Dictlist()[0]:
+          datatypes[col] = 'NULL'
+        for row in self.get_Dictlist():
+          for col in row:
+            if type(row[col]) is bytes:
+              datatypes[col] = 'BLOB'
+            elif type(row[col]) is str:
+              datatypes[col] = 'TEXT'
+            elif type(row[col]) is float and datatypes[col] != str:
+              datatypes[col] = 'REAL'
+            elif type(row[col]) is int and datatypes[col] != float and datatypes[col] != str:
+              datatypes[col] = 'INTEGER'
+        createStatement = "create table " + self.get_TableName() + "("
+        cols = 0
+        for col in datatypes:
+          if cols > 0:
+            createStatement += ', '
+          createStatement += col + ' ' + datatypes[col]
+          cols += 1
+        createStatement += ');'
+        c.execute(createStatement)
+        for index in self.get_Indexes():
+          createIndex = 'create index ' + self.get_TableName() + '_' + index + ' on ' + self.get_TableName() + '(' + index + ');'
+          c.execute(createIndex)
+        for row in self.get_Dictlist():
+          insertStatement = 'insert into ' + self.get_TableName() + ' values('
+          cols = 0
+          for col in row:
+            if cols > 0:
+              insertStatement += ', '
+            cols += 1
+            if row[col] == None:
+              insertStatement += 'NULL'
+              continue
+            if datatypes[col] == 'TEXT':
+              insertStatement += "'"
+            insertStatement += str(row[col])
+            if datatypes[col] == 'TEXT':
+              insertStatement += "'"
+          insertStatement += ');'
+          c.execute(insertStatement)
+        sqliteConnection.commit()
+        c.close()
+        sqliteConnection.close()
+    
+    def queryDB(self, where, values=None):
+        """ Returns a list of dictionaries from Dictlist whose
+            values pass the given where condition.
+            Parameters: 
+              where (str)
+              value (str)
+            Returns:                                    
+              list of dictionaries
+        """
+        if where is None:
+            return
+        if len(where) == 0:
+            return
+        sqliteConnection = sqlite3.connect(self.get_Path() + '/' + self.get_TableName() + '.db')
+        c = sqliteConnection.cursor()
+        selectStatement = 'select * from ' + self.get_TableName() + ' where '
+        
+        if type(where) == str and values is None:
+            if ' != ' in where:
+                splitter = ' != '
+                indexname = where.split(splitter)[0]
+                value = where.split(splitter)[1]
+                selectStatement += indexname + ' <> '
+                cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                selectStatement += value
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+            elif ' == ' in where:
+                splitter = ' == '
+                indexname = where.split(splitter)[0]
+                value = where.split(splitter)[1]
+                selectStatement += indexname + ' = '
+                cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                selectStatement += value
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+            elif ' IS NOT NULL' in where.upper():
+                splitter = ' is not '
+                indexname = where.lower().split(splitter)[0]
+                selectStatement += indexname + ' is not null'
+            elif ' IS NULL' in where.upper():
+                splitter = ' is '
+                indexname = where.lower().split(splitter)[0]
+                selectStatement += indexname + ' is null '
+            else:
+                return []
+        
+        elif values is not None:
+            if type(where) == str and type(values) == str:
+                indexname = where
+                value = values
+                selectStatement += indexname + ' = '
+                cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                selectStatement += value
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+            elif type(where) == list and type(values) == str:
+                indexname = where[0]
+                value = values
+                selectStatement += indexname + ' = '
+                cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                selectStatement += value
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                if len(where) > 1:
+                  for indexname in where[1:]:
+                    selectStatement += ' or ' + indexname + ' = '
+                    cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+                    selectStatement += value
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+            elif type(where) == str and type(values) == list:
+                indexname = where
+                value = values[0]
+                selectStatement += indexname + ' = '
+                cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                selectStatement += value
+                if cfetchall00 == 'TEXT':
+                  selectStatement += "'"
+                if len(values) > 1:
+                  for value in values[1:]:
+                    selectStatement += ' or ' + indexname + ' = '
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+                    selectStatement += value
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+            elif type(where) == list and type(values) == list:
+                useOR = False
+                for indexname in where:
+                  cfetchall00 = self.GetSQLiteDataTypes()[indexname]
+                  for value in values:
+                    if useOR:
+                      selectStatement += ' or '
+                    selectStatement += indexname + ' = '
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+                    selectStatement += value
+                    if cfetchall00 == 'TEXT':
+                      selectStatement += "'"
+                    useOR = True
+        selectStatement += ';'
+        c.execute(selectStatement)
+        returnedcolumns = list(next(zip(*c.description)))
+        returnedlod = []
+        for queryrow in c.fetchall():
+          rowdict = {}
+          for returnedcolumnnumber in range(len(returnedcolumns)):
+            rowdict[returnedcolumns[returnedcolumnnumber]] = queryrow[returnedcolumnnumber]
+          returnedlod.append(rowdict)
+        c.close()
+        sqliteConnection.close()
+        return returnedlod
+    
+    def CreateTable(self):
+        """ Stores the randata object as a JSON file
+            and supporting files.
+            Parameters: 
+              none
+            Returns:                                    
+              none
+        """
+        if self.get_Path() == None or self.get_TableName() == None:
+          print('Path and Table Name must be set to perform this task')
+          return
+        if os.path.isdir(self.get_Path()) == False:
+          print(self.get_Path(), 'does not exist.')
+          return
+        if os.path.isfile(self.get_Path() + '/' + self.get_TableName() + '.json') == True:
+          print(self.get_TableName(), 'already exists.')
+          return
+        with open(self.get_Path() + '/' + self.get_TableName() + '.json', 'w') as fout:
+          fout.write(json.dumps(self.get_Dictlist()))
+        with open(self.get_Path() + '/' + self.get_TableName() + '_Indexes.json', 'w') as fout:
+          fout.write(str(self.get_Indexes()))
+        with open(self.get_Path() + '/' + self.get_TableName() + '_Dlindexes.json', 'w') as fout:
+          fout.write(str(self.get_Dlindexes()))
+    
+    def SetSource(self, path, tablename):
+        """ Points the object to a source JSON file and
+            loads associated indexes to memory.
+            Parameters: 
+              path (str)
+              tablename (str)
+            Returns:                                    
+              none
+        """
+        if os.path.isdir(path) == False:
+          print(path, 'does not exist.')
+          return
+        if os.path.isfile(path + '/' + tablename + '.json') == False:
+          print(tablename, 'does not exist.')
+          return
+        self.set_Path(path)
+        self.set_TableName(tablename)
+        indexes = ''
+        with open(self.get_Path() + '/' + self.get_TableName() + '_Dlindexes.json', 'r') as fin:
+          self.set_Dlindexes(str(fin.read()))
+        if os.path.isfile(self.get_Path() + '/' + self.get_TableName() + '_Indexes.json'):
+          with open(self.get_Path() + '/' + self.get_TableName() + '_Indexes.json', 'r') as fin:
+            indexes = fin.read()
+        else:
+          print('no index file')
+        self.set_Indexes(ast.literal_eval(indexes))
 
 def isruddynumeric(val):
     """ Checks if a value is numeric
