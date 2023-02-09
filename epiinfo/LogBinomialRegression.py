@@ -1140,18 +1140,19 @@ class LogBinomialRegression:
         lastVar1 = bLabel.split('*')[0]
         lastVar2 = bLabel.split('*')[1]
         interactions += 1
-    if lastVar1 not in bLabels or lastVar2 not in bLabels:
-      return self.IORNotMainEffects(lastVar1, lastVar2, cm, bLabels, B, DataArray)
-    oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
-    twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
-    if oneIsDummy and twoIsDummy:
-      iorOut += self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
-    elif oneIsDummy:
-      iorOut += self.DummyFirst(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
-    elif twoIsDummy:
-      iorOut += self.DummyLast(cm, bLabels, B, lastVar2, lastVar1, interactions, iaTerms, DataArray)
-    else:
-      iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
+        if (len(lastVar1) > 0 and lastVar1 not in bLabels) or (len(lastVar2) > 0 and lastVar2 not in bLabels):
+          iorOut += self.IORNotMainEffects(lastVar1, lastVar2, cm, bLabels, B, DataArray)
+          continue
+        oneIsDummy = self.ColumnsAndValues[lastVar1]['ref'] is not None
+        twoIsDummy = self.ColumnsAndValues[lastVar2]['ref'] is not None
+        if oneIsDummy and twoIsDummy:
+          iorOut += self.TwoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
+        elif oneIsDummy:
+          iorOut += self.DummyFirst(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray)
+        elif twoIsDummy:
+          iorOut += self.DummyLast(cm, bLabels, B, lastVar2, lastVar1, interactions, iaTerms, DataArray)
+        else:
+          iorOut.append(self.NoDummyVariables(cm, bLabels, B, lastVar1, lastVar2, interactions, iaTerms, DataArray))
 
     return iorOut
 
