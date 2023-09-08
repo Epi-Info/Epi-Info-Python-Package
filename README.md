@@ -17,7 +17,7 @@ dataset = eicsv('path/filename.csv')
 Reads a CSV file and creates a list of dictionaries called 'dataset'.<br>
 ##### JSON
 ```
-dataset = eijson('path/filenamejson')
+dataset = eijson('path/filename.json')
 ```
 Reads a JSON file and creates a list of dictionaries called 'dataset'.<br>
 ##### Sync File
