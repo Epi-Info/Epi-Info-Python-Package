@@ -82,7 +82,8 @@ The result of Run() is this dict:<br>
    'ChiSqP': 0.7886,
    'FishersExact': 0.7683844417832235}]}
 ```
-Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions, with the 8-value variable "Workdays" added to demonstrate 2xN analysis.<br>
+Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions, with the 8-value variable "Workdays" added to demonstrate 2xN analysis.<br><br>
+(MxN Fisher's Exact test is adapted from the 1983 Fortran (FORTRAN 77) routine by Mehta and Patel.)
 #### LogisticRegression
 Contains functions for Logistic Regression analysis. In addition to computing identical results to Epi Info Dashboard on identical datasets, this routine also computes interaction odds ratios and confidents limits for interaction effects that are not also main effects.<br>
 ```
