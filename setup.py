@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 PACKAGE_NAME = 'epiinfo'
 AUTHOR = 'John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)'
 AUTHOR_EMAIL = 'zfj4@cdc.gov'
@@ -16,7 +16,7 @@ LONG_DESC_TYPE = "Imports data from different formats, including Epi Info sync f
 
 INSTALL_REQUIRES = [
       'scipy',
-      'pycrypto'
+      'pycryptodome'
 ]
 
 setup(name=PACKAGE_NAME,
