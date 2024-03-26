@@ -36,7 +36,7 @@ from epiinfo.TablesAnalysis import *
 ivdict = {'outcomeVariable' : 'Ill'}
 ivdict['exposureVariables'] = ['ChefSalad', 'Workdays']
 ta = TablesAnalysis()
-ta.Run(ivdict, dataset)
+taResults = ta.Run(ivdict, dataset)
 ```
 'dataset' is the list of dictionaries containing the analysis data. 'ivdict' is a dictionary of analysis variables.<br><br>
 The result of Run() is this dict:<br>
