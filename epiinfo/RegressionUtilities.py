@@ -1212,3 +1212,47 @@ class LogisticRegressionResults:
       print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Fit Test','Value','DF','P',width=18))
       print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Score',str(round(self.Score, 4)),str(round(self.ScoreDF, 4)),str(round(self.ScoreP, 4)),width=18))
       print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Likelihood Ratio',str(round(self.LikelihoodRatio, 4)),str(round(self.LikelihoodRatioDF, 4)),str(round(self.LikelihoodRatioP, 4)),width=18))
+
+  def showHTML(self):
+    if len(self.Beta) == 0:
+      print('Nothing to show<br>')
+      return
+    widthofcoeff = 16
+    showFitTests = True
+    for varname in self.Variables:
+      if len(varname) > widthofcoeff:
+        widthofcoeff = len(varname)
+    regType = 'LOGISTIC'
+    testType = 'Minus Two Log-Likelihood'
+    ratioType = 'Odds'
+    ratios = self.OR
+    ratiolls = self.ORLCL
+    ratiouls = self.ORUCL
+    likelihood = self.MinusTwoLogLikelihood
+    interactions = self.InteractionOR
+    if len(self.OR) == 0:
+      showFitTests = False
+      regType = 'LOG BINOMIAL'
+      testType = 'Log-Likelihood'
+      ratioType = 'Risk'
+      ratios = self.RR
+      ratiolls = self.RRLCL
+      ratiouls = self.RRUCL
+      likelihood = self.LogLikelihood
+      interactions = self.InteractionRR
+    print(regType, 'REGRESSION RESULTS', '<br>')
+    # Saving this next line to record this other way of accomplishing the formatting
+    # print('{0:<{6}s}{1:^16s}{2:^16s}{3:^16s}{4:^16s}{5:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper',widthofcoeff), '<br>')
+    print('{:<{width}s}{:^16s}{:^16s}{:^16s}{:^8s}{:^8s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper',width=widthofcoeff), '<br>')
+    for i in range(len(self.Variables)):
+      if i < len(self.Variables) - 1:
+        print('{:<{width}s}{:^16s}{:^16s}{:^16s}{:^8s}{:^8s}'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),str(round(ratios[i], 4)),str(round(ratiolls[i], 4)),str(round(ratiouls[i], 4)),width=widthofcoeff), '<br>')
+    print('{:<{width}s}{:^16s}{:^16s}\n'.format(self.Variables[i],str(round(self.Beta[i], 4)),str(round(self.SE[i], 4)),width=widthofcoeff), '<br>')
+    print('{:<{width}s}{:>8s}'.format('Number of Iterations',str(round(self.Iterations, 0)),width=26), '<br>')
+    print('{:<{width}s}{:>8s}'.format(testType,str(round(likelihood, 2)),width=26), '<br>')
+    print('{:<{width}s}{:>8s}'.format('Number of Observations',str(round(self.CasesIncluded, 0)),width=26), '<br>')
+    if showFitTests:
+      print('<br>')
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Fit Test','Value','DF','P',width=18), '<br>')
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Score',str(round(self.Score, 4)),str(round(self.ScoreDF, 4)),str(round(self.ScoreP, 4)),width=18), '<br>')
+      print('{:<{width}s}{:>8s}{:>8s}{:>8s}'.format('Likelihood Ratio',str(round(self.LikelihoodRatio, 4)),str(round(self.LikelihoodRatioDF, 4)),str(round(self.LikelihoodRatioP, 4)),width=18), '<br>')
