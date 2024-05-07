@@ -1247,7 +1247,7 @@ class LogisticRegressionResults:
     print('<br>\n<table>\n<tr><th>Variable</th><th>Coefficient</th><th>Standard Error</th><th>',ratioType+' Ratio</th><th>Lower</th><th>Upper</th></tr>')
     for i in range(len(self.Variables)):
       if i < len(self.Variables) - 1:
-        print('<tr><th>', self.Variables[i], </th><td>', str(round(self.Beta[i], 4)), '</td><td>', str(round(self.SE[i], 4)), '</td><td>', str(round(ratios[i], 4)), '</td><td>', str(round(ratiolls[i], 4)), '</td><td>', str(round(ratiouls[i], 4)), '</td></tr>\n')
+        print('<tr><th>', self.Variables[i], '</th><td>', str(round(self.Beta[i], 4)), '</td><td>', str(round(self.SE[i], 4)), '</td><td>', str(round(ratios[i], 4)), '</td><td>', str(round(ratiolls[i], 4)), '</td><td>', str(round(ratiouls[i], 4)), '</td></tr>\n')
     print('<tr><th>', self.Variables[i], '</th><td>', str(round(self.Beta[i], 4)), '</td><td>', str(round(self.SE[i], 4)), '</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>\n</table>\n<br>\n')
     print('<table>\n<tr><th>', 'Number of Iterations', '</th><td>', str(round(self.Iterations, 0)), '</td></tr>\n')
     print('<table>\n<tr><th>', 'testType', '</th><td>', str(round(likelihood, 2)), '</td></tr>\n')
