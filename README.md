@@ -2,7 +2,7 @@
 This package brings Epi Info statistical analysis routines, plus a log binomial regression analysis routine for computing adjusted relative risks of associations with binary outcome data, to the Python environment. It has methods for converting datasets into Python objects and for passing those objects to analysis functions.
 #### Current version available in dist folder
 ```
-pip install path/epiinfo-1.0.6-py3-none-any.whl
+pip install path/epiinfo-1.1.0.8-py3-none-any.whl
 ```
 Full path to pip may be necessary.
 ### Classes
@@ -148,6 +148,10 @@ for ior in rslts.InteractionOR:
 15.599932822362803 2 0.0004
 ```
 Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
+```
+rslts.showHTML()
+```
+Formats rslts.show() as HTML for future use within Epi Info Classic Analysis.<br>
 #### LogBinomialRegression
 Contains functions for Log-Binomial Regression analysis to provide adjusted risk ratios when the independent variable is binary.<br>
 ```
@@ -215,6 +219,10 @@ for ph in rslts.ParameterHistory:
 [0.28702656278093225, 0.33587378874771817, -0.8578882747952187]
 ```
 Results are from the fictional Salmonellosis dataset often used in Epi Info training sessions.<br>
+```
+rslts.showHTML()
+```
+Formats rslts.show() as HTML for future use within Epi Info Classic Analysis.<br>
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
 ```
