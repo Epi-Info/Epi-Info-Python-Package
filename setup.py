@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.1.0.7'
+VERSION = '1.1.0.8'
 PACKAGE_NAME = 'epiinfo'
 AUTHOR = 'John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)'
 AUTHOR_EMAIL = 'zfj4@cdc.gov'

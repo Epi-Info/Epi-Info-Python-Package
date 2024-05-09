@@ -1250,9 +1250,9 @@ class LogisticRegressionResults:
       if i < len(self.Variables) - 1:
         print('<tr><td class="PyStats"><strong>', self.Variables[i], '</strong></td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(ratios[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(ratiolls[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(ratiouls[i], 4)), '</td></tr>\n')
     print('<tr><td class="PyStats"><strong>', self.Variables[i], '</strong></td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td></tr>\n</table>\n<br>\n')
-    print('<table>\n<tr><td class="PyStats"><strong>', 'Number of Iterations', '</strong></td><td class="PyStats">', str(round(self.Iterations, 0)), '</td></tr>\n')
-    print('<tr><td class="PyStats"><strong>', testType, '</strong></td><td class="PyStats">', str(round(likelihood, 2)), '</td></tr>\n')
-    print('<tr><td class="PyStats"><strong>', 'Number of Observations', '</strong></td><td class="PyStats">', str(round(self.CasesIncluded, 0)), '</td></tr>\n</table>\n')
+    print('<table>\n<tr><td class="PyStats"><strong>', 'Number of Iterations', '</strong></td><td class="PyStats" align="right">', str(round(self.Iterations, 0)), '</td></tr>\n')
+    print('<tr><td class="PyStats"><strong>', testType, '</strong></td><td class="PyStats" align="right">', str(round(likelihood, 2)), '</td></tr>\n')
+    print('<tr><td class="PyStats"><strong>', 'Number of Observations', '</strong></td><td class="PyStats" align="right">', str(round(self.CasesIncluded, 0)), '</td></tr>\n</table>\n')
     if showFitTests:
       print('<br>\n')
       print('<table>\n<tr><td class="PyStats"><strong>', 'Fit Test', '</strong></td><td class="PyStats" align="center"><strong>', 'Value', '</strong></td><td class="PyStats"><strong>', 'DF', '</strong></td><td class="PyStats" align="center"><strong>', 'P', '</strong></td></tr>\n')
