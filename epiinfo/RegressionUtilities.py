@@ -1255,6 +1255,6 @@ class LogisticRegressionResults:
     print('<tr><td class="PyStats"><strong>', 'Number of Observations', '</strong></td><td class="PyStats">', str(round(self.CasesIncluded, 0)), '</td></tr>\n</table>\n')
     if showFitTests:
       print('<br>\n')
-      print('<table>\n<tr><td class="PyStats"><strong>', 'Fit Test', '</strong></td><td class="PyStats"><strong>', 'Value', '</strong></td><td class="PyStats"><strong>', 'DF', '</strong></td><td class="PyStats"><strong>', 'P', '</strong></td></tr>\n')
-      print('<tr><td class="PyStats"><strong>', 'Score', '</strong></td><td class="PyStats">', str(round(self.Score, 4)), '</td><td class="PyStats">', str(round(self.ScoreDF, 4)), '</td><td class="PyStats">', str(round(self.ScoreP, 4)), '</td></tr>\n')
-      print('<tr><td class="PyStats"><strong>', 'Likelihood Ratio', '</strong></td><td class="PyStats">', str(round(self.LikelihoodRatio, 4)), '</td><td class="PyStats">', str(round(self.LikelihoodRatioDF, 4)), '</td><td class="PyStats">', str(round(self.LikelihoodRatioP, 4)), '</td></tr>\n</table>\n<br>\n')
+      print('<table>\n<tr><td class="PyStats"><strong>', 'Fit Test', '</strong></td><td class="PyStats" align="center"><strong>', 'Value', '</strong></td><td class="PyStats"><strong>', 'DF', '</strong></td><td class="PyStats" align="center"><strong>', 'P', '</strong></td></tr>\n')
+      print('<tr><td class="PyStats"><strong>', 'Score', '</strong></td><td class="PyStats">', str(round(self.Score, 4)), '</td><td class="PyStats" align="center">', str(round(self.ScoreDF, 4)), '</td><td class="PyStats">', str(round(self.ScoreP, 4)), '</td></tr>\n')
+      print('<tr><td class="PyStats"><strong>', 'Likelihood Ratio', '</strong></td><td class="PyStats">', str(round(self.LikelihoodRatio, 4)), '</td><td class="PyStats" align="center">', str(round(self.LikelihoodRatioDF, 4)), '</td><td class="PyStats">', str(round(self.LikelihoodRatioP, 4)), '</td></tr>\n</table>\n<br>\n')
