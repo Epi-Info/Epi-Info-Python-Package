@@ -1240,7 +1240,7 @@ class LogisticRegressionResults:
       ratiouls = self.RRUCL
       likelihood = self.LogLikelihood
       interactions = self.InteractionRR
-    print('\n<style type="text/css">\ntd.PyStats\n{\nborder-style:none;\nborder-width:0px;\npadding-left:5px;\npadding-right:5px;\npadding-bottom:0px;\n}\n</style>\n\n')
+    print('<style type="text/css">\ntd.PyStats\n{\nborder-style:none;\nborder-width:0px;\npadding-left:5px;\npadding-right:5px;\npadding-bottom:0px;\n}\n</style>\n\n')
     print(regType, 'REGRESSION RESULTS', '<br>')
     # Saving this next line to record this other way of accomplishing the formatting
     # print('{0:<{6}s}{1:^16s}{2:^16s}{3:^16s}{4:^16s}{5:^16s}'.format('Variable','Coefficient','Standard Error',ratioType+' Ratio','Lower','Upper',widthofcoeff), '<br>')
@@ -1248,13 +1248,13 @@ class LogisticRegressionResults:
     print('<br>\n<table>\n<tr><td class="PyStats"><strong>Variable</strong></td><td class="PyStats"><strong>Coefficient</strong></td><td class="PyStats"><strong>Standard Error</strong></td><td class="PyStats"><strong>',ratioType+' Ratio</strong></td><td class="PyStats"><strong>Lower</strong></td><td class="PyStats"><strong>Upper</strong></td></tr>')
     for i in range(len(self.Variables)):
       if i < len(self.Variables) - 1:
-        print('<tr><td class="PyStats" align="left"><strong>', self.Variables[i], '</strong></td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(ratios[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(ratiolls[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(ratiouls[i], 4)), '</td></tr>\n')
-    print('<tr><td class="PyStats" align="left"><strong>', self.Variables[i], '</strong></td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats" align="right">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td></tr>\n</table>\n<br>\n')
-    print('<table>\n<tr><td class="PyStats"><strong>', 'Number of Iterations', '</strong></td><td class="PyStats" align="right">', str(round(self.Iterations, 0)), '</td></tr>\n')
-    print('<tr><td class="PyStats"><strong>', testType, '</strong></td><td class="PyStats" align="right">', str(round(likelihood, 2)), '</td></tr>\n')
-    print('<tr><td class="PyStats"><strong>', 'Number of Observations', '</strong></td><td class="PyStats" align="right">', str(round(self.CasesIncluded, 0)), '</td></tr>\n</table>\n')
+        print('<tr><td class="PyStats"><strong>', self.Variables[i], '</strong></td><td class="PyStats">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(ratios[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(ratiolls[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(ratiouls[i], 4)), '</td></tr>\n')
+    print('<tr><td class="PyStats"><strong>', self.Variables[i], '</strong></td><td class="PyStats">', '{:.4f}'.format(round(self.Beta[i], 4)), '</td><td class="PyStats">', '{:.4f}'.format(round(self.SE[i], 4)), '</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td><td class="PyStats">&nbsp;</td></tr>\n</table>\n<br>\n')
+    print('<table>\n<tr><td class="PyStats"><strong>', 'Number of Iterations', '</strong></td><td class="PyStats">', str(round(self.Iterations, 0)), '</td></tr>\n')
+    print('<tr><td class="PyStats"><strong>', testType, '</strong></td><td class="PyStats">', str(round(likelihood, 2)), '</td></tr>\n')
+    print('<tr><td class="PyStats"><strong>', 'Number of Observations', '</strong></td><td class="PyStats">', str(round(self.CasesIncluded, 0)), '</td></tr>\n</table>\n')
     if showFitTests:
       print('<br>\n')
       print('<table>\n<tr><td class="PyStats"><strong>', 'Fit Test', '</strong></td><td class="PyStats"><strong>', 'Value', '</strong></td><td class="PyStats"><strong>', 'DF', '</strong></td><td class="PyStats"><strong>', 'P', '</strong></td></tr>\n')
-      print('<tr><td class="PyStats"><strong>', 'Score', '</strong></td><td class="PyStats" align="right">', str(round(self.Score, 4)), '</td><td class="PyStats" align="right">', str(round(self.ScoreDF, 4)), '</td><td class="PyStats" align="right">', str(round(self.ScoreP, 4)), '</td></tr>\n')
-      print('<tr><td class="PyStats"><strong>', 'Likelihood Ratio', '</strong></td><td class="PyStats" align="right">', str(round(self.LikelihoodRatio, 4)), '</td><td class="PyStats" align="right">', str(round(self.LikelihoodRatioDF, 4)), '</td><td class="PyStats" align="right">', str(round(self.LikelihoodRatioP, 4)), '</td></tr>\n</table>\n<br>\n')
+      print('<tr><td class="PyStats"><strong>', 'Score', '</strong></td><td class="PyStats">', str(round(self.Score, 4)), '</td><td class="PyStats">', str(round(self.ScoreDF, 4)), '</td><td class="PyStats">', str(round(self.ScoreP, 4)), '</td></tr>\n')
+      print('<tr><td class="PyStats"><strong>', 'Likelihood Ratio', '</strong></td><td class="PyStats">', str(round(self.LikelihoodRatio, 4)), '</td><td class="PyStats">', str(round(self.LikelihoodRatioDF, 4)), '</td><td class="PyStats">', str(round(self.LikelihoodRatioP, 4)), '</td></tr>\n</table>\n<br>\n')
