@@ -4,7 +4,7 @@ This package brings Epi Info statistical analysis routines, plus a log binomial 
 ```
 pip install path/epiinfo-1.2.0.1-py3-none-any.whl
 ```
-Full path to pip may be necessary.
+Full path to pip may be necessary. If so, try the Scripts subdirectory of the Python install directory.
 ### Classes
 #### ImportData
 Contains functions for importing data sources to Python objects (lists of dictionaries) for consumption by analysis functions.<br><br>
