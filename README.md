@@ -36,10 +36,11 @@ from epiinfo.MakeSQLite import *
 makesql = MakeSQLite()
 res = makesql.makeTable('C:\\Path\\to\\SQLite\\Database\\File\\sql1.db', dataobject, 'sqltable', sqldatatypes)
 ```
-The first argument to the makeTable function is the path and file name for the SQLite database to which to write or replace the table.<br>
-dataobject is the Python list of dictionaries to be written to SQLite.<br>
-'sqltable' is the name of the destination SQLite table.<br>
-sqldatatypes is a dict of column names and SQLite data types to be used in creating the SQLite table. This dict, by this name, is automatically created by the Epi Info Classic Analysis PYTHON statement.<br>
+* The first argument to the makeTable function is the path and file name for the SQLite database to which to write or replace the table.<br>
+* dataobject is the Python list of dictionaries to be written to SQLite.<br>
+* 'sqltable' is the name of the destination SQLite table.<br>
+* sqldatatypes is a dict of column names and SQLite data types to be used in creating the SQLite table. This dict, by this name, is automatically created by the Epi Info Classic Analysis PYTHON statement.
+
 #### TablesAnalysis
 Performs MxN Tables Analyses of Outcome and Exposures, with statistical tests of association.<br>
 ```
