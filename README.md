@@ -163,7 +163,7 @@ Results are from the fictional Salmonellosis dataset often used in Epi Info trai
 ```
 rslts.showHTML()
 ```
-Formats rslts.show() as HTML for future use within Epi Info Classic Analysis.<br>
+Formats rslts.show() as HTML for the Output pane within Epi Info Classic Analysis.<br>
 #### LogBinomialRegression
 Contains functions for Log-Binomial Regression analysis to provide adjusted risk ratios when the independent variable is binary.<br>
 ```
@@ -234,7 +234,7 @@ Results are from the fictional Salmonellosis dataset often used in Epi Info trai
 ```
 rslts.showHTML()
 ```
-Formats rslts.show() as HTML for future use within Epi Info Classic Analysis.<br>
+Formats rslts.show() as HTML for the Output pane within Epi Info Classic Analysis.<br>
 #### EICSTables
 Contains the ComplexSampleTables class, which contains the functions ComplexSampleTables and ComplexSampleFrequencies.<br>
 ```
