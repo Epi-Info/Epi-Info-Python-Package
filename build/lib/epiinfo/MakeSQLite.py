@@ -24,4 +24,5 @@ class MakeSQLite:
         sqlconn.commit()
         res = cursor.fetchall()
         cursor.close()
+        sqlconn.close()
         return res
