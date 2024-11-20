@@ -7,7 +7,10 @@ class MakeSQLite:
         cursor.execute("drop table if exists " + dsname)
         createstatement = 'create table ' + dsname + '('
         for k in ds[0]:
-            createstatement += k + ", "
+            if k in sqldatatypes:
+                createstatement += k + " " + sqldatatypes[k] + ", "
+            else:
+                createstatement += k + ", "
         createstatement = createstatement[:-2] + ');'
         cursor.execute(createstatement)
         for s in ds:
