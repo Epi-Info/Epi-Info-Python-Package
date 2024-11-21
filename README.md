@@ -2,7 +2,7 @@
 This package brings Epi Info statistical analysis routines, plus a log binomial regression analysis routine for computing adjusted relative risks of associations with binary outcome data, to the Python environment. It has methods for converting datasets into Python objects and for passing those objects to analysis functions.
 #### Current version available in dist folder
 ```
-pip install path/epiinfo-1.2.0.4-py2.py3-none-any.whl
+pip install path/epiinfo-1.2.0.5-py2.py3-none-any.whl
 ```
 Full path to pip may be necessary. If so, try the Scripts subdirectory of the Python install directory.
 ### Classes
@@ -21,6 +21,13 @@ Reads a CSV file and creates a list of dictionaries called 'dataset'.<br>
 dataset = eijson('path/filename.json')
 ```
 Reads a JSON file and creates a list of dictionaries called 'dataset'.<br>
+##### SQLite
+```
+datadict = {}
+dataset = eisqlite('path/filename.db', 'tablename', datadict)
+```
+Reads a table from a(n) SQLite database and creates a list of dictionaries called 'dataset'.<br>
+Also populates an initially-empty dict with columns (keys) and SQLite data types (values).<br>
 ##### Sync File
 ```
 initVector = 'D1041B94D49F66DF120AD40269E102EA'
