@@ -1,0 +1,28 @@
+[build-system]
+requires = [
+    "wheel",
+    "setuptools-scm[toml]>=8.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "epiinfo"
+version = "1.2.0.4"
+authors = [
+  { name="John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)", email="zfj4@cdc.gov" },
+]
+description = "Epi Info: Import and analyze data"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "scipy",
+    "ijson",
+    "pycryptodome",
+]
+license = {text = "Apache License 2.0"}
+
+[project.urls]
+Homepage = "https://github.com/Epi-Info/Epi-Info-Python-Package"
+
+[tool.distutils.bdist_wheel]
+universal = true
