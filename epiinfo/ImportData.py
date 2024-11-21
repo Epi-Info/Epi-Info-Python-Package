@@ -1,4 +1,4 @@
-from .randata import randata, csvToRandata, jsonToRandata, syncToRandata
+from .randata import randata, csvToRandata, jsonToRandata, syncToRandata, sqliteToRandata
 
 def eisync(pathandfile, initVector, passwordSalt, pwd):
     """ Reads an Epi Info sync file (encrypted XML) and
@@ -32,3 +32,18 @@ def eijson(pathandfile):
           list of dictionaries
     """
     return jsonToRandata(pathandfile).get_Dictlist()
+
+def eisqlite(pathanddb, tablename, datadict):
+    """ Reads a(n) SQLite table and populates a list of dict object
+          and a data dictionary dict.
+        Parameters:
+          pathanddb (str): the path and SQLite .db file
+          tablename (str): the name of the SQLite table
+          dl       (list): the list of dict to be built
+          datadict (dict): initially {} dict of column names and SQLite data types
+        Returns:
+          list of dictionaries
+    """
+    rd = randata([])
+    sqliteToRandata(pathanddb, tablename, rd, datadict)
+    return rd.get_Dictlist()

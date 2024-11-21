@@ -925,6 +925,52 @@ def jsonToRandata(pathandfile):
         dictlist = json.loads(fin.read())
     return randata(dictlist)
 
+def sqliteToRandata(pathanddb, tablename, rd, datadict):
+    """ Reads a(n) SQLite table and populates a randata object
+          and a data dictionary dict.
+        Parameters:
+          pathanddb (str): the path and SQLite .db file
+          tablename (str): the name of the SQLite table
+          rd    (randata): the randata object to be built
+          datadict (dict): initially {} dict of column names and SQLite data types
+        Returns:
+          nothing
+    """
+    # Begin the dictlist and establish the SQLite connection
+    dictlist = rd.get_Dictlist()
+    sqlconn = sqlite3.connect(pathanddb)
+    sqlconn.row_factory = sqlite3.Row
+    cursor = sqlconn.cursor()
+
+    # Query the table
+    sqlstatement = "SELECT * FROM " + tablename
+    qrslt = cursor.execute(sqlstatement).fetchall()
+
+    # Loop the query result and add dicts to dictlist
+    for row in qrslt:
+        d = {}
+        for col in row.keys():
+            d[col] = row[col]
+        dictlist.append(d)
+
+    # Get the column names and types from the master table
+    # Add them to datadict
+    cursor.execute("select sql from sqlite_master where type = 'table' and name = '" + tablename + "';")
+    columns = list(next(zip(*cursor.description)))
+    lod = []
+    for row in cursor.fetchall():
+      rd = {}
+      for i in range(len(columns)):
+        rd[columns[i]] = row[i]
+      lod.append(rd)
+    for pair in lod[0]['sql'].split('(')[1][:-1].split(', '):
+      datadict[pair.split(' ')[0]] = pair.split(' ')[1]
+
+    # Unlock the database
+    cursor.close()
+    sqlconn.close()
+
+
 def csvToRandata(pathandfile):
     """ Reads a CSV file and returns a randata object.
         Parameters:
