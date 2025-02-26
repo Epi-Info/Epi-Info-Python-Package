@@ -89,7 +89,7 @@ class TablesAnalysis:
         df += 2.0
         m = m * x / df
         l = l + m
-    return round(10000 * (1 - j * k * l)) / 10000
+    return round(100000000 * (1 - j * k * l)) / 100000000
 
   def pFromZ(self, _z):
     """ Computs a P value for a Z statistic
@@ -374,7 +374,13 @@ class TablesAnalysis:
       cmle = math.inf
     return cmle
 
-  def ExactTests(self, minSumA, sumA, degD, ExactTests, bigPolyD):
+  def addLogToLog(self, logValue, addedLogValue):
+    if 10.0 ** logValue == 0:
+        return addedLogValue
+    power = round(logValue)
+    return power + math.log10(10 ** (logValue - power) + 10.0 ** (addedLogValue - power))
+
+  def ExactTests(self, minSumA, sumA, degD, ExactTests, bigPolyD, polyD):
     """ Support function for exact odds ratios
         Parameters:
           table (list(list)): A list of lists of ints
@@ -383,27 +389,43 @@ class TablesAnalysis:
     """
     diff = int(sumA - minSumA)
     bigUpTail = BigDouble('logValue', bigPolyD[int(degD)].logValue)
+    bigUpTail = polyD[int(degD)]
     bigTwoTail = BigDouble('doubleValue', 1.0)
-    if bigUpTail.logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
-      bigTwoTail.plusLog(bigUpTail.logValue)
+    bigTwoTail = float('-inf')
+    if bigUpTail <= math.log10(1.000001) + polyD[diff]:
+      bigTwoTail = bigUpTail
+#    if bigUpTail.logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
+#      bigTwoTail.plusLog(bigUpTail.logValue)
     i = int(degD) - 1
     while i >= diff:
-      bigUpTail.plusLog(bigPolyD[i].logValue)
-      if bigPolyD[i].logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
-        bigTwoTail.plusLog(bigPolyD[i].logValue)
+      bigUpTail = self.addLogToLog(bigUpTail, polyD[i])
+      if polyD[i] <= math.log10(1.000001) + polyD[diff]:
+        bigTwoTail = self.addLogToLog(bigTwoTail, polyD[i])
+#      bigUpTail.plusLog(bigPolyD[i].logValue)
+#      if bigPolyD[i].logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
+#        bigTwoTail.plusLog(bigPolyD[i].logValue)
       i -= 1
-    bigDenom = BigDouble('logValue', bigUpTail.logValue)
+#    bigDenom = BigDouble('logValue', bigUpTail.logValue)
+    bigDenom = bigUpTail
     i = diff - 1
     while i >= 0:
-      bigDenom.plusLog(bigPolyD[i].logValue)
-      if bigPolyD[i].logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
-        bigTwoTail.plusLog(bigPolyD[i].logValue)
+#      bigDenom.plusLog(bigPolyD[i].logValue)
+      bigDenom = self.addLogToLog(bigDenom, polyD[i])
+      if polyD[i] <= math.log10(1.000001) + polyD[diff]:
+        bigTwoTail = self.addLogToLog(bigTwoTail, polyD[i])
+#      if bigPolyD[i].logValue <= math.log10(1.000001) + bigPolyD[diff].logValue:
+#        bigTwoTail.plusLog(bigPolyD[i].logValue)
       i -= 1
-    ExactTests[0] = 1.0 - (10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** (bigPolyD[diff].logValue - bigDenom.logValue))
-    ExactTests[1] = 10.0 ** (bigUpTail.logValue - bigDenom.logValue)
-    ExactTests[2] = 10.0 ** (bigTwoTail.logValue - bigDenom.logValue)
-    ExactTests[3] = 1.0 - (10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** ((math.log10(0.5) + bigPolyD[diff].logValue) - bigDenom.logValue))
-    ExactTests[4] = 10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** ((math.log10(0.5) + bigPolyD[diff].logValue) - bigDenom.logValue)
+#    ExactTests[0] = 1.0 - (10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** (bigPolyD[diff].logValue - bigDenom.logValue))
+#    ExactTests[1] = 10.0 ** (bigUpTail.logValue - bigDenom.logValue)
+#    ExactTests[2] = 10.0 ** (bigTwoTail.logValue - bigDenom.logValue)
+#    ExactTests[3] = 1.0 - (10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** ((math.log10(0.5) + bigPolyD[diff].logValue) - bigDenom.logValue))
+#    ExactTests[4] = 10.0 ** (bigUpTail.logValue - bigDenom.logValue) - 10.0 ** ((math.log10(0.5) + bigPolyD[diff].logValue) - bigDenom.logValue)
+    ExactTests[0] = 1.0 - (10.0 ** (bigUpTail - bigDenom) - 10.0 ** (polyD[diff] - bigDenom))
+    ExactTests[1] = 10.0 ** (bigUpTail - bigDenom)
+    ExactTests[2] = 10.0 ** (bigTwoTail - bigDenom)
+    ExactTests[3] = 1.0 - (10.0 ** (bigUpTail - bigDenom) - 10.0 ** ((math.log10(0.5) + polyD[diff]) - bigDenom))
+    ExactTests[4] = 10.0 ** (bigUpTail - bigDenom) - 10.0 ** ((math.log10(0.5) + polyD[diff]) - bigDenom)
 
   def RRStats(self, table):
     """ Support function for exact odds ratios
@@ -467,16 +489,20 @@ class TablesAnalysis:
     if n1 < m1:
       maxA = n1
     bigPolyD = [BigDouble('logValue', 0.0) for i in range(int(maxA - minA + 1))]
+    polyDi = [None] * (round(maxA - minA) + 1)
     bigPolyD[0] = BigDouble('doubleValue', 1.0)
+    polyDi[0] = 0.0
     aa = minA
     bb = m1 - minA + 1.0
     cc = n1 - minA + 1.0
     dd = n0 - m1 + minA
-    for i in range(1, int(maxA - minA) + 1):
+    for i in range(1, round(maxA - minA) + 1):
       bigPolyD[i] = BigDouble('logValue', bigPolyD[i - 1].timesReturn(((bb - i) / (aa + i)) * ((cc - i) / (dd + i))))
+      polyDi[i] = float(polyDi[i - 1] * ((bb - i) / (aa + i)) * ((cc - i) / (dd + i)))
+      polyDi[i] = polyDi[i - 1] + math.log10(((bb - i) / (aa + i)) * ((cc - i) / (dd + i)))
     ExactResults[0] = self.CalcCmle(1.0, minA, table[0][0], maxA, maxA - minA + 1, bigPolyD)
     ExactTestsList = [None] * 5
-    self.ExactTests(minA, table[0][0], maxA - minA, ExactTestsList, bigPolyD)
+    self.ExactTests(minA, table[0][0], maxA - minA, ExactTestsList, bigPolyD, polyDi)
     ExactResults[1] = ExactTestsList[3]
     if ExactTestsList[4] < ExactTestsList[3]:
       ExactResults[1] = ExactTestsList[4]
@@ -2048,6 +2074,480 @@ class TablesAnalysis:
       if row[column] in values:
         newdt.append(row)
     return newdt
+
+  def ZSElnOR(self, a, b, c, d):
+    p1, p2, p3, p4, p5, ZValue = 0.0, 0.0, 0.0, 0.0, 0.0, 1.96
+    for i in range(len(a)):
+        p1 += ((a[i] + d[i]) / (a[i] + b[i] + c[i] + d[i])) * (a[i] * d[i] / (a[i] + b[i] + c[i] + d[i]))
+        p2 += ((a[i] + d[i]) / (a[i] + b[i] + c[i] + d[i])) * (b[i] * c[i] / (a[i] + b[i] + c[i] + d[i]))
+        p2 += ((b[i] + c[i]) / (a[i] + b[i] + c[i] + d[i])) * (a[i] * d[i] / (a[i] + b[i] + c[i] + d[i]))
+        p3 += ((b[i] + c[i]) / (a[i] + b[i] + c[i] + d[i])) * (b[i] * c[i] / (a[i] + b[i] + c[i] + d[i]))
+        p4 += (a[i] * d[i] / (a[i] + b[i] + c[i] + d[i]))
+        p5 += (b[i] * c[i] / (a[i] + b[i] + c[i] + d[i]))
+    SElnOR = (p1 / (2 * p4 * p4) + p2 / (2 * p4 * p5) + p3 / (2 * p5 * p5)) ** 0.5
+    return ZValue * SElnOR
+
+  def ZSElnRR(self, a, b, c, d):
+    numerator, denom1, denom2, ZValue = 0.0, 0.0, 0.0, 1.96
+    for i in range(len(a)):
+        numplus = ((a[i] + c[i]) * (a[i] + b[i]) * (c[i] + d[i]) - a[i] * c[i] * (a[i] + b[i] + c[i] + d[i]))
+        numplus /= ((a[i] + b[i] + c[i] + d[i]) * (a[i] + b[i] + c[i] + d[i]))
+        numerator += numplus
+        denom1 += (a[i] * (c[i] + d[i])) / (a[i] + b[i] + c[i] + d[i])
+        denom2 += (c[i] * (a[i] + b[i])) / (a[i] + b[i] + c[i] + d[i])
+    SElnOR = (numerator / (denom1 * denom2)) ** 0.5
+    return ZValue * SElnOR
+
+  def strat2x2(self, a, b, c, d):
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(a)):
+        numerator += (a[i] * d[i]) / (a[i] + b[i] + c[i] + d[i])
+        denominator += (b[i] * c[i]) / (a[i] + b[i] + c[i] + d[i])
+    return numerator / denominator
+
+  def ComputedRR(self, a, b, c, d):
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(a)):
+        numerator += (a[i] * (c[i] + d[i])) / (a[i] + b[i] + c[i] + d[i])
+        denominator += (c[i] * (a[i] + b[i])) / (a[i] + b[i] + c[i] + d[i])
+    return numerator / denominator
+
+  def exactorln(self, aas, bbs, ccs, dds):
+    M1, M0, N1, N0 = [0.0] * len(aas), [0.0] * len(aas), [0.0] * len(aas), [0.0] * len(aas)
+    ls, us, xs = [0.0] * len(aas), [0.0] * len(aas), []
+    x, l, u, maxuldiff = 0, 0, 0, 0.0
+    for i in range(len(aas)):
+        xs.append(aas[i])
+        if aas[i] > 999999 or bbs[i] > 999999 or ccs[i] > 999999 or dds[i] > 999999:
+            return float('nan')
+    for i in range(len(aas)):
+        M1[i] = aas[i] + ccs[i]
+        M0[i] = bbs[i] + dds[i]
+        N1[i] = aas[i] + bbs[i]
+        N0[i] = ccs[i] + dds[i]
+        ls[i] = max(0, N1[i] - M0[i])
+        us[i] = min(M1[i], N1[i])
+        x += xs[i]
+        l += ls[i]
+        u += us[i]
+    Cs = []
+    dimC2 = 0
+    C2 = []
+    for i in range(len(aas)):
+        dimC2 += us[i] - ls[i]
+        Cs.append([])
+    for i in range(dimC2 + 1):
+        C2.append(0.0)
+    maxuldiff = 0
+    maxusi = us[0]
+    for i in range(len(aas)):
+        if us[i] > maxusi:
+            maxusi = us[i]
+    for i in range(len(aas)):
+        if us[i] - ls[i] > maxuldiff:
+            maxuldiff = us[i] - ls[i]
+            Cs[i] = [0] * (maxusi + 1)
+        for s in range(ls[i], us[i] + 1):
+            Cs[i][s - ls[i]] = self.choosey(M1[i], s) * self.choosey(M0[i], N1[i] - s)
+    Y = [0.0] * (int(u) - int(l) + 1)
+    for j in range(us[0] - ls[0] + 1):
+        for k in range(us[1] - ls[1] + 1):
+            C2[j + k] += Cs[0][j] * Cs[1][k]
+    bound = 0
+    for i in range(2, len(aas)):
+        for j in range(0, u - l + 1):
+            Y[j] = C2[j]
+            C2[j] = 0.0
+        bound = 0
+        for j in range(i - 1 + 1):
+            bound += us[i] - ls[i]
+        for j in range(u - l - 1):
+            for k in range(us[i] - ls[i] + 1):
+                if j + k <= u - l:
+                    C2[j + k] += Y[j] * Cs[i][k]
+    R = 0.0
+    Ds = [0.0] * len(aas)
+    d2 = 1.0
+    FR = 1.0
+    adder = 0.0
+    while FR > 0.975:
+        for i in range(len(aas)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R += 1
+        for j in range(len(aas)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        for i in range((x - 1) - l + 1):
+            adder = C2[i]
+            for j in range(len(Ds) - 1 + 1):
+                adder /= Ds[j]
+            adder *= R ** (i + l)
+            FR += adder
+    aa = R - 1.0
+    bb = R + 0.5
+    precision = 0.00001
+    while bb - aa > precision:
+        for i in range(len(aas)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R = (bb + aa) / 2.0
+        for j in range(len(aas)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        for i in range((x - 1) - l + 1):
+            adder = C2[i]
+            for j in range(len(Ds) - 1 + 1):
+                adder /= Ds[j]
+            adder *= R ** (i + l)
+            FR += adder
+        if FR > 0.975:
+            aa = R
+        else:
+            bb = R
+    return R
+
+  def exactorun(self, aas, bbs, ccs, dds, minimum):
+    M1, M0, N1, N0 = [0.0] * len(aas), [0.0] * len(aas), [0.0] * len(aas), [0.0] * len(aas)
+    ls, us, xs = [0.0] * len(aas), [0.0] * len(aas), []
+    x, l, u, maxuldiff = 0, 0, 0, 0.0
+    for i in range(len(aas)):
+        xs.append(aas[i])
+        if aas[i] > 999999 or bbs[i] > 999999 or ccs[i] > 999999 or dds[i] > 999999:
+            return float('nan')
+    for i in range(len(aas)):
+        M1[i] = aas[i] + ccs[i]
+        M0[i] = bbs[i] + dds[i]
+        N1[i] = aas[i] + bbs[i]
+        N0[i] = ccs[i] + dds[i]
+        ls[i] = max(0, N1[i] - M0[i])
+        us[i] = min(M1[i], N1[i])
+        x += xs[i]
+        l += ls[i]
+        u += us[i]
+    Cs = []
+    dimC2 = 0
+    C2 = []
+    for i in range(len(aas)):
+        dimC2 += us[i] - ls[i]
+        Cs.append([])
+    for i in range(dimC2 + 1):
+        C2.append(0.0)
+    maxuldiff = 0
+    maxusi = us[0]
+    for i in range(len(aas)):
+        if us[i] > maxusi:
+            maxusi = us[i]
+    for i in range(len(aas)):
+        if us[i] - ls[i] > maxuldiff:
+            maxuldiff = us[i] - ls[i]
+            Cs[i] = [0] * (maxusi + 1)
+        for s in range(ls[i], us[i] + 1):
+            Cs[i][s - ls[i]] = self.choosey(M1[i], s) * self.choosey(M0[i], N1[i] - s)
+    Y = [0.0] * (int(u) - int(l) + 1)
+    for j in range(us[0] - ls[0] + 1):
+        for k in range(us[1] - ls[1] + 1):
+            C2[j + k] += Cs[0][j] * Cs[1][k]
+            if C2[j + k] == float('inf'):
+                return float('nan')
+    bound = 0
+    for i in range(2, len(aas)):
+        for j in range(0, u - l + 1):
+            Y[j] = C2[j]
+            C2[j] = 0.0
+        bound = 0
+        for j in range(i - 1 + 1):
+            bound += us[i] - ls[i]
+        for j in range(u - l - 1):
+            for k in range(us[i] - ls[i] + 1):
+                if j + k <= u - l:
+                    C2[j + k] += Y[j] * Cs[i][k]
+                if j + k <= u - l:
+                    if C2[j + k] == float('inf'):
+                        return float('nan')
+    R = minimum - 0.1
+    Ds = [0.0] * len(aas)
+    d2 = 1.0
+    FR = 0.0
+    MiddlePart = 1.0
+    while True:
+        for i in range(len(aas)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R += 0.1
+        for j in range(len(aas)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        MiddlePart = 1 / Ds[0]
+        for i in range(x - l + 1):
+            if i + l > 0:
+                MiddlePart = R / Ds[0]
+            for j in range(2, i + l + 1):
+                MiddlePart *= R
+            for j in range(1, len(aas)):
+                MiddlePart /= Ds[j]
+            FR += C2[i] * MiddlePart
+        if FR <= 0.025:
+            break
+    aa = R - 1.0
+    bb = R + 0.5
+    precision = 0.00001
+    while bb - aa > precision:
+        for i in range(len(aas)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R = (bb + aa) / 2.0
+        for j in range(len(aas)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        MiddlePart = 1 / Ds[0]
+        for i in range(x - l + 1):
+            if i + l > 0:
+                MiddlePart = R / Ds[0]
+            for j in range(2, i + l + 1):
+                MiddlePart *= R
+            for j in range(1, len(aas)):
+                MiddlePart /= Ds[j]
+            FR += C2[i] * MiddlePart
+        if FR > 0.025:
+            aa = R
+        else:
+            bb = R
+    return R
+
+  def choosey(self, chooa, choob):
+    ccccc = chooa - choob
+    if choob < chooa / 2:
+        choob = ccccc
+    choosey = 1.0
+    for i in range(choob + 1, chooa + 1):
+                   choosey = (choosey * i) / (chooa - (i - 1))
+    return choosey
+
+  def ucestimaten(self, a, b, c, d):
+    M1, M0, N1, N0, ls, us, xs, x, l, u, maxuldiff = [], [], [], [], [], [], [], 0, 0, 0, 0.0
+    for i in range(len(a)):
+        if a[i] > 999999 or b[i] > 999999 or c[i] > 999999 or d[i] > 999999:
+            return float('nan')
+    for i in range(len(a)):
+        xs.append(a[i])
+    for i in range(len(a)):
+        M1.append(a[i] + c[i])
+        M0.append(b[i] + d[i])
+        N1.append(a[i] + b[i])
+        N0.append(c[i] + d[i])
+        ls.append(max(0, N1[i] - M0[i]))
+        us.append(min(M1[i], N1[i]))
+        x += xs[i]
+        l += ls[i]
+        u += us[i]
+    Cs = []
+    dimC2 = 0
+    C2 = []
+    for i in range(len(a)):
+        dimC2 += us[i] - ls[i]
+        Cs.append([])
+    for i in range(dimC2 + 1):
+        C2.append(0.0)
+    maxuldiff = 0
+    maxusi = us[0]
+    for i in range(len(a)):
+        if us[i] > maxusi:
+            maxusi = us[i]
+    for i in range(len(a)):
+        if us[i] - ls[i] > maxuldiff:
+            maxuldiff = us[i] - ls[i]
+            Cs[i] = [0] * (maxusi + 1)
+        for s in range(ls[i], us[i] + 1):
+            Cs[i][s - ls[i]] = self.choosey(M1[i], s) * self.choosey(M0[i], N1[i] - s)
+    Y = [0.0] * (u - l + 1)
+    for j in range(us[0] - ls[0] + 1):
+        for k in range(us[1] - ls[1] + 1):
+            C2[j + k] += Cs[0][j] * Cs[1][k]
+    bound = 0
+    for i in range(2, len(a)):
+        for j in range(0, u - l + 1):
+            Y[j] = C2[j]
+            C2[j] = 0.0
+        bound = 0
+        for j in range(i - 1 + 1):
+            bound += us[i] - ls[i]
+        for j in range(u - l - 1):
+            for k in range(us[i] - ls[i] + 1):
+                if j + k <= u - l:
+                    C2[j + k] += Y[j] * Cs[i][k]
+    R = 0.0
+    Ds = [0.0] * len(a)
+    d2 = 1.0
+    FR = 0.0
+    adder = 0.0
+    while FR < x:
+        for i in range(len(a)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R += 1
+        for j in range(len(a)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        for i in range(u - l + 1):
+            adder = (i + l) * C2[i]
+            for j in range(len(Ds) - 1 + 1):
+                adder /= Ds[j]
+            adder *= R ** (i + l)
+            FR += adder
+    aa = R - 1.0
+    bb = R + 0.5
+    precision = 0.00001
+    while bb - aa > precision:
+        for i in range(len(a)):
+            Ds[i] = 0.0
+        d2 = 1.0
+        FR = 0.0
+        R = (bb + aa) / 2.0
+        for j in range(len(a)):
+            for i in range(us[j] - ls[j] + 1):
+                Ds[j] += Cs[j][i] * R ** (ls[j] + i)
+            d2 *= Ds[j]
+        for i in range(u - l + 1):
+            adder = (i + l) * C2[i]
+            for j in range(len(Ds) - 1 + 1):
+                adder /= Ds[j]
+            adder *= R ** (i + l)
+            FR += adder
+        if FR < x:
+            aa = R
+        else:
+            bb = R
+    return R
+
+  def ComputeUnChisq(self, a, b, c, d):
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(a)):
+        numerator += (a[i] * d[i] - b[i] * c[i]) / (a[i] + b[i] + c[i] + d[i])
+        dplus = ((a[i] + b[i]) * (c[i] + d[i]) * (a[i] + c[i]) * (b[i] + d[i]))
+        dplus /= (((a[i] + b[i] + c[i] + d[i]) - 1) * (a[i] + b[i] + c[i] + d[i]) * (a[i] + b[i] + c[i] + d[i]))
+        denominator += dplus
+    return (numerator * numerator) / denominator
+
+  def ComputeCorrChisq(self, a, b, c, d):
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(a)):
+        numerator += (a[i] * d[i] - b[i] * c[i]) / (a[i] + b[i] + c[i] + d[i])
+        dplus = ((a[i] + b[i]) * (c[i] + d[i]) * (a[i] + c[i]) * (b[i] + d[i]))
+        dplus /= (((a[i] + b[i] + c[i] + d[i]) - 1) * (a[i] + b[i] + c[i] + d[i]) * (a[i] + b[i] + c[i] + d[i]))
+        denominator += dplus
+    return ((abs(numerator) - 0.5) * (abs(numerator) - 0.5)) / denominator
+
+  def bdOR(self, yy, yn, ny, nn):
+    bd = 0.0
+    bor = [0.0] * len(yy)
+    w = [0.0] * len(yy)
+    for i in range(len(yy)):
+        bor[i] = (yy[i] / yn[i]) / (ny[i] / nn[i])
+        w[i] = 1 / (1 / yy[i] + 1 / yn[i] + 1 / ny[i] + 1 / nn[i])
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(yy)):
+        numerator += w[i] * math.log(bor[i])
+        denominator += w[i]
+    orDirect = math.exp(numerator / denominator)
+    for i in range(len(yy)):
+        bd += (math.log(bor[i]) - math.log(orDirect)) ** 2.0 * w[i]
+    return bd
+
+  def bdtOR(self, yy, yn, ny, nn, mleOR):
+    bd, sumYY, sumAk, sumVar = 0.0, 0.0, 0.0, 0.0
+    for i in range(0, len(yy)):
+        N1k = yy[i] + ny[i]
+        N0k = yn[i] + nn[i]
+        tk = yy[i] + yn[i]
+        Nk = yy[i] + yn[i] + ny[i] + nn[i]
+        a = 0.0
+        b = min(tk, N1k)
+        Ak = (a + b) / 2.0
+        precision = 0.00001
+        psi = 0.0
+        while True:
+            Ak = (a + b) / 2.0
+            psi = (Ak * (N0k - tk + Ak)) / ((N1k - Ak) * (tk - Ak))
+            if psi < 0.0 or psi < mleOR:
+                a = Ak
+            else:
+                b = Ak
+            if abs(mleOR - psi) < precision:
+                break
+        var = 1 / (1 / Ak + 1 / (N1k - Ak) + 1 / (tk - Ak) + 1 / (N0k - tk + Ak))
+        bd += ((yy[i] - Ak) * (yy[i] - Ak)) / var
+        sumYY += yy[i]
+        sumAk += Ak
+        sumVar += var
+    correction = ((sumYY - sumAk) * (sumYY - sumAk)) / sumVar
+    bd -= correction
+    return bd
+
+  def bdRR(self, yy, yn, ny, nn):
+    bd = 0.0
+    rr = [0.0] * len(yy)
+    w = [0.0] * len(yy)
+    for i in range(len(yy)):
+        rr[i] = (yy[i] / (yy[i] + yn[i])) / (ny[i] / (ny[i] + nn[i]))
+        w[i] = 1 / (yn[i] / (yy[i] * (yy[i] + yn[i])) + nn[i] / (ny[i] * (ny[i] + nn[i])))
+    numerator, denominator = 0.0, 0.0
+    for i in range(len(yy)):
+        numerator += w[i] * math.log(rr[i])
+        denominator += w[i]
+    rrDirect = math.exp(numerator / denominator)
+    for i in range(len(yy)):
+        bd += (math.log(rr[i]) - math.log(rrDirect)) ** 2.0 * w[i]
+    return bd
+
+  def Summarize(self, yyArray, ynArray, nyArray, nnArray):
+    ret = {}
+    cumulativeYY = sum(yyArray)
+    cumulativeYN = sum(ynArray)
+    cumulativeNY = sum(nyArray)
+    cumulativeNN = sum(nnArray)
+    ret['computedOddsRatio'] = self.strat2x2(yyArray, ynArray, nyArray, nnArray)
+    ret['computedOddsRatioMHLL'] = ret['computedOddsRatio'] *  math.exp(-self.ZSElnOR(yyArray, ynArray, nyArray, nnArray))
+    ret['computedOddsRatioMHUL'] = ret['computedOddsRatio'] *  math.exp(self.ZSElnOR(yyArray, ynArray, nyArray, nnArray))
+    ret['computedRR'] = self.ComputedRR(yyArray, ynArray, nyArray, nnArray)
+    ret['computedRRMHLL'] = ret['computedRR'] *  math.exp(-self.ZSElnRR(yyArray, ynArray, nyArray, nnArray))
+    ret['computedRRMHUL'] = ret['computedRR'] *  math.exp(self.ZSElnRR(yyArray, ynArray, nyArray, nnArray))
+    ret['mleOR'] = float('nan')
+    ret['ExactORLL'] = float('nan')
+    ret['ExactORUL'] = float('nan')
+    if cumulativeYN == 0.0 or cumulativeNY == 0.0:
+        ret['mleOR'] = float('inf')
+        ret['ExactORLL'] = self.exactorln(yyArray, ynArray, nyArray, nnArray)
+        ret['ExactORUL'] = float('inf')
+    elif cumulativeYY == 0.0 or cumulativeNN == 0.0:
+        ret['mleOR'] = 0.0
+        ret['ExactORLL'] = 0.0
+        ret['ExactORUL'] = self.exactorun(yyArray, ynArray, nyArray, nnArray, ret['mleOR'])
+    else:
+        ret['mleOR'] = self.ucestimaten(yyArray, ynArray, nyArray, nnArray)
+        ret['ExactORLL'] = self.exactorln(yyArray, ynArray, nyArray, nnArray)
+        ret['ExactORUL'] = self.exactorun(yyArray, ynArray, nyArray, nnArray, ret['mleOR'])
+    ret['uncorrecedChiSquare'] = self.ComputeUnChisq(yyArray, ynArray, nyArray, nnArray)
+    ret['uncorrectedChiSquareP'] = self.PValFromChiSq(float(ret['uncorrecedChiSquare']), 1)
+    ret['corrChisq'] = self.ComputeCorrChisq(yyArray, ynArray, nyArray, nnArray)
+    ret['corrChisqP'] = self.PValFromChiSq(float(ret['corrChisq']), 1)
+    ret['bdtOR'] = self.bdtOR(yyArray, ynArray, nyArray, nnArray, float(ret['computedOddsRatio']))
+    ret['bdtORP'] = self.PValFromChiSq(float(ret['bdtOR']), len(yyArray) - 1)
+    ret['bdOR'] = self.bdOR(yyArray, ynArray, nyArray, nnArray)
+    ret['bdORP'] = self.PValFromChiSq(float(ret['bdOR']), len(yyArray) - 1)
+    ret['bdRR'] = self.bdRR(yyArray, ynArray, nyArray, nnArray)
+    ret['bdRRP'] = self.PValFromChiSq(float(ret['bdRR']), len(yyArray) - 1)
+    return ret
 
   def Run(self, inputVariableList, dataTable):
     """ Executes the supporting functions to run the analysis
