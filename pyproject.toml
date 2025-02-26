@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "epiinfo"
-version = "1.2.0.5"
+version = "1.2.0.6"
 authors = [
   { name="John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)", email="zfj4@cdc.gov" },
 ]
