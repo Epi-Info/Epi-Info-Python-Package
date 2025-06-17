@@ -24,6 +24,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install build
 
+      - name: Clean old builds
+        run: |
+          rm -rf dist build
+
       - name: Build wheel
         run: |
           python -m build --wheel
