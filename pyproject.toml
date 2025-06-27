@@ -6,8 +6,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Epi-Info-Python-Package"
-version = "1.2.0.8"
+name = "epi-info-python-package"
+version = "1.2.0.9"
 authors = [
   { name="John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)" },
 ]
