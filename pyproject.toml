@@ -7,9 +7,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Epi-Info-Python-Package"
-version = "1.2.0.7"
+version = "1.2.0.8"
 authors = [
-  { name="John Copeland" },
+  { name="John Copeland (ported code to Pyton and added interaction odds ratios and log-binomial regression)" },
 ]
 description = "Epi Info: Import and analyze data"
 readme = "README.md"

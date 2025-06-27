@@ -964,7 +964,10 @@ def sqliteToRandata(pathanddb, tablename, rd, datadict):
         rd[columns[i]] = row[i]
       lod.append(rd)
     for pair in lod[0]['sql'].split('(')[1][:-1].split(', '):
-      datadict[pair.split(' ')[0]] = pair.split(' ')[1]
+      if len(pair.split(' ')) > 1:
+        datadict[pair.split(' ')[0]] = pair.split(' ')[1]
+      else:
+        datadict[pair.split(' ')[0]] = 'TBD'
 
     # Unlock the database
     cursor.close()

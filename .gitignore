@@ -47,6 +47,20 @@ build/lib/epiinfo/BigDouble.py
 
 build/lib/epiinfo/TablesAnalysis.py
 
-build/lib/epiinfo/TablesAnalysis.py
+build/lib/epiinfo/Frequencies.py
 
-build/lib/epiinfo/TablesAnalysis.py
+build/lib/epiinfo/LinearRegression.py
+
+build/lib/epiinfo/LineList.py
+
+build/lib/epiinfo/MakeSQLite.py
+
+build/lib/epiinfo/Means.py
+
+build/lib/epiinfo/ResultsFormatting.py
+
+8.0
+
+Epi_Info_Python_Package.egg-info
+
+dist
