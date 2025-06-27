@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.2.0.10'
+VERSION = '1.2.0.11'
 PACKAGE_NAME = 'epi-info-python-package'
 AUTHOR = 'John Copeland'
 AUTHOR_EMAIL = 'ita3@cdc.gov'
