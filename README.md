@@ -1,8 +1,8 @@
 ## Epi Info Data Imports and Analyses
 This package brings Epi Info statistical analysis routines, plus a log binomial regression analysis routine for computing adjusted relative risks of associations with binary outcome data, to the Python environment. It has methods for converting datasets into Python objects and for passing those objects to analysis functions.
-#### Install using pip
+#### Current version available in dist folder
 ```
-pip install epi-info-python-package
+pip install path/epiinfo-1.2.0.6-py2.py3-none-any.whl
 ```
 Full path to pip may be necessary. If so, try the Scripts subdirectory of the Python install directory.
 ### Classes
