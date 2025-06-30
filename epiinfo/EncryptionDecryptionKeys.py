@@ -3,5 +3,5 @@ class EncryptionDecryptionKeys:
         for decrypting sync files encrypted by Epi Info
         mobile apps.
     """
-    INITVECTOR = "00000000000000000000000000000000"
+    INITVECTOR = "00000000000000000000000000000008"
     PASSWORDSALT = "00000000000000000000"
