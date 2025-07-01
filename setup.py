@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 HERE = pathlib.Path(__file__).parent
 
 VERSION = '1.2.0.14'
-PACKAGE_NAME = 'epiinfo'
+PACKAGE_NAME = 'epi_info_python_package'
 AUTHOR = 'John Copeland'
 AUTHOR_EMAIL = 'ita3@cdc.gov'
 URL = 'https://github.com/Epi-Info/Epi-Info-Python-Package'

@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "epiinfo"
+name = "epi_info_python_package"
 version = "1.2.0.14"
 authors = [
   { name="John Copeland" },
