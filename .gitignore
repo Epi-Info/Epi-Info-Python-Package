@@ -63,4 +63,4 @@ build/lib/epiinfo/ResultsFormatting.py
 
 Epi_Info_Python_Package.egg-info
 
-dist
+dist/epi_info_python*
